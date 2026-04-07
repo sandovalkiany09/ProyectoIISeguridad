@@ -1,10 +1,18 @@
 import express from 'express';
 import pool from './src/config/db.js';
+import authRoutes from './src/routes/authRoutes.js';
 
 const app = express();
+
+// Middleware para leer JSON
 app.use(express.json());
 
-// Ruta de prueba
+// Rutas de autenticación
+app.use('/api/auth', authRoutes);
+
+/**
+ * Ruta de prueba para verificar conexión a la base de datos
+ */
 app.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -20,7 +28,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-//Puerto
+// Puerto del servidor
 const PORT = 3000;
 
 app.listen(PORT, () => {
