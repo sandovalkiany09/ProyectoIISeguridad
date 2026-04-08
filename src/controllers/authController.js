@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import pool from '../config/db.js';
+import jwt from 'jsonwebtoken';
 
 /**
  * Registra un nuevo usuario en la base de datos
@@ -46,6 +47,69 @@ export const register = async (req, res) => {
 
   } catch (error) {
     console.error('Error en register:', error);
+
+    return res.status(500).json({
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+/**
+ * Login de usuario
+ */
+export const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validación básica
+    if (!username || !password) {
+      return res.status(400).json({
+        message: 'Usuario y contraseña son obligatorios'
+      });
+    }
+
+    // Buscar usuario en la base de datos
+    const result = await pool.query(
+      'SELECT * FROM usuarios WHERE username = $1',
+      [username]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        message: 'Credenciales inválidas'
+      });
+    }
+
+    const user = result.rows[0];
+
+    // Comparar contraseña con bcrypt
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: 'Credenciales inválidas'
+      });
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        rol_id: user.rol_id
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Respuesta exitosa
+    return res.json({
+      message: 'Login exitoso',
+      token
+    });
+
+  } catch (error) {
+    console.error('Error en login:', error);
 
     return res.status(500).json({
       message: 'Error interno del servidor'
