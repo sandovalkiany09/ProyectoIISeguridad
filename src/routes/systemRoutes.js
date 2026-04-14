@@ -32,7 +32,7 @@ router.delete('/usuarios/:id', verifyToken, authorizeRoles(1), (req, res) => {
 
 /**
  * =========================
- * ROLES (CRUD COMPLETO)
+ * ROLES 
  * =========================
  */
 
@@ -63,21 +63,24 @@ router.delete('/roles/:id', verifyToken, authorizeRoles(1), (req, res) => {
  * =========================
  */
 
-router.get('/productos', verifyToken, authorizeRoles(1, 2, 3), (req, res) => {
-  res.json({ message: 'Lista de productos' });
-});
+import {
+  getProductos,
+  createProducto,
+  patchProducto,
+  deleteProducto
+} from '../controllers/productController.js';
 
-router.post('/productos', verifyToken, authorizeRoles(1, 3), (req, res) => {
-  res.json({ message: 'Producto creado' });
-});
+// Ver productos (todos)
+router.get('/productos', verifyToken, authorizeRoles(1, 2, 3), getProductos);
 
-router.put('/productos/:id', verifyToken, authorizeRoles(1, 3), (req, res) => {
-  res.json({ message: 'Producto actualizado' });
-});
+// Crear producto (admin y registrador)
+router.post('/productos', verifyToken, authorizeRoles(1, 3), createProducto);
 
-router.delete('/productos/:id', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Producto eliminado' });
-});
+// Actualizar producto (admin y registrador)
+router.patch('/productos/:id', verifyToken, authorizeRoles(1, 3), patchProducto);
+
+// Eliminar producto (solo admin)
+router.delete('/productos/:id', verifyToken, authorizeRoles(1), deleteProducto);
 
 
 /**

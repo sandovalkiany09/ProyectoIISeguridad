@@ -1,6 +1,7 @@
 import express from 'express';
 import pool from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
+import systemRoutes from './src/routes/systemRoutes.js';
 
 const app = express();
 
@@ -9,6 +10,9 @@ app.use(express.json());
 
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
+
+// Rutas 
+app.use('/api', systemRoutes);
 
 /**
  * Ruta de prueba para verificar conexión a la base de datos
