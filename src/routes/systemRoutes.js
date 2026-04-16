@@ -8,26 +8,24 @@ const router = express.Router();
  * USUARIOS 
  * =========================
  */
+import {
+  getUsuarios,
+  createUsuario,
+  patchUsuario,
+  deleteUsuario
+} from '../controllers/userController.js';
 
-// Leer todos (todos los roles pueden ver)
-router.get('/usuarios', verifyToken, authorizeRoles(1, 2, 3), (req, res) => {
-  res.json({ message: 'Lista de usuarios' });
-});
+// Ver usuarios (todos)
+router.get('/usuarios', verifyToken, authorizeRoles(1, 2, 3), getUsuarios);
 
-// Crear (solo admin)
-router.post('/usuarios', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Usuario creado' });
-});
+// Crear usuario (solo admin)
+router.post('/usuarios', verifyToken, authorizeRoles(1), createUsuario);
 
-// Actualizar (solo admin)
-router.put('/usuarios/:id', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Usuario actualizado' });
-});
+// Actualizar usuario (solo admin)
+router.patch('/usuarios/:id', verifyToken, authorizeRoles(1), patchUsuario);
 
-// Eliminar (solo admin)
-router.delete('/usuarios/:id', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Usuario eliminado' });
-});
+// Eliminar usuario (solo admin)
+router.delete('/usuarios/:id', verifyToken, authorizeRoles(1), deleteUsuario);
 
 
 /**
