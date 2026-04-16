@@ -1,5 +1,6 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
+import { logAuditoria } from '../utils/auditLogger.js';
 
 /**
  * Obtener todos los usuarios
@@ -51,7 +52,15 @@ export const createUsuario = async (req, res) => {
       [nombre, email, hashedPassword, rol_id]
     );
 
-    res.status(201).json(result.rows[0]);
+    // LOG
+    const nuevo = result.rows[0];
+    await logAuditoria(
+      req.user.id,
+      `CREATE usuario ID ${nuevo.id}`,
+      req.ip
+    );
+
+    res.status(201).json(nuevo);
 
   } catch (error) {
     console.error('Error al crear usuario:', error);
@@ -123,7 +132,25 @@ export const patchUsuario = async (req, res) => {
       });
     }
 
-    res.json(result.rows[0]);
+    const actualizado = result.rows[0];
+
+    // LOG (detecta cambio de rol)
+    if (rol_id !== undefined) {
+      await logAuditoria(
+        req.user.id,
+        `CAMBIO ROL usuario ID ${actualizado.id} a rol ${rol_id}`,
+        req.ip
+      );
+    } else {
+      //LOG
+      await logAuditoria(
+        req.user.id,
+        `UPDATE usuario ID ${actualizado.id}`,
+        req.ip
+      );
+    }
+
+    res.json(actualizado);
 
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
@@ -149,6 +176,13 @@ export const deleteUsuario = async (req, res) => {
         message: 'Usuario no encontrado'
       });
     }
+
+    // LOG
+    await logAuditoria(
+      req.user.id,
+      `DELETE usuario ID ${id}`,
+      req.ip
+    );
 
     res.json({ message: 'Usuario eliminado' });
 

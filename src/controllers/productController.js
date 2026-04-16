@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { logAuditoria } from '../utils/auditLogger.js';
 
 /**
  * Obtener todos los productos
@@ -35,7 +36,15 @@ export const createProducto = async (req, res) => {
       [codigo, nombre, descripcion, cantidad, precio]
     );
 
-    res.status(201).json(result.rows[0]);
+    // LOG
+    const nuevo = result.rows[0];
+    await logAuditoria(
+      req.user.id,
+      `CREATE producto ID ${nuevo.id}`,
+      req.ip
+    );
+
+    res.status(201).json(nuevo);
 
   } catch (error) {
     console.error('Error al crear producto:', error);
@@ -89,7 +98,7 @@ export const patchProducto = async (req, res) => {
       });
     }
 
-    // Agregar ID al final
+    // Agregar ID 
     values.push(id);
 
     const query = `
@@ -107,7 +116,16 @@ export const patchProducto = async (req, res) => {
       });
     }
 
-    res.json(result.rows[0]);
+    const actualizado = result.rows[0];
+
+    // LOG
+    await logAuditoria(
+      req.user.id,
+      `UPDATE producto ID ${actualizado.id}`,
+      req.ip
+    );
+
+    res.json(actualizado);
 
   } catch (error) {
     console.error('Error en PATCH producto:', error);
@@ -133,6 +151,13 @@ export const deleteProducto = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Producto no encontrado' });
     }
+
+    // LOG
+    await logAuditoria(
+      req.user.id,
+      `DELETE producto ID ${id}`,
+      req.ip
+    );
 
     res.json({ message: 'Producto eliminado' });
 

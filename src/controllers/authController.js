@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import pool from '../config/db.js';
 import jwt from 'jsonwebtoken';
+import { logAuditoria } from '../utils/auditLogger.js';
 
 /**
  * Registra un nuevo usuario en la base de datos
@@ -74,7 +75,15 @@ export const login = async (req, res) => {
       [username]
     );
 
+    // Usuario no existe
     if (result.rows.length === 0) {
+
+      await logAuditoria(
+        null,
+        `LOGIN fallido - usuario no encontrado (${username})`,
+        req.ip
+      );
+
       return res.status(401).json({
         message: 'Credenciales inválidas'
       });
@@ -85,11 +94,32 @@ export const login = async (req, res) => {
     // Comparar contraseña con bcrypt
     const isMatch = await bcrypt.compare(password, user.password);
 
+    // Contraseña incorrecta
     if (!isMatch) {
+
+      await logAuditoria(
+        user.id,
+        'LOGIN fallido - contraseña incorrecta',
+        req.ip
+      );
+
       return res.status(401).json({
         message: 'Credenciales inválidas'
       });
     }
+
+    // Actualizar último login
+    await pool.query(
+      'UPDATE usuarios SET last_login = NOW() WHERE id = $1',
+      [user.id]
+    );
+
+    // Log exitoso
+    await logAuditoria(
+      user.id,
+      'LOGIN exitoso',
+      req.ip
+    );
 
     // Generar token JWT
     const token = jwt.sign(

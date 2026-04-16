@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import { logAuditoria } from '../utils/auditLogger.js';
+
 
 /**
  * Verifica si el usuario tiene un token válido
@@ -42,22 +44,27 @@ export const verifyToken = (req, res, next) => {
  * Verifica si el usuario tiene uno de los roles permitidos
  */
 export const authorizeRoles = (...rolesPermitidos) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
-      const userRole = req.user.rol_id;
+      if (!rolesPermitidos.includes(req.user.rol_id)) {
 
-      if (!rolesPermitidos.includes(userRole)) {
+        //LOG ACCESO DENEGADO
+        await logAuditoria(
+          req.user?.id || null,
+          `ACCESO DENEGADO a ${req.originalUrl}`,
+          req.ip
+        );
+
         return res.status(403).json({
-          message: 'No tienes permisos para esta acción'
+          message: 'Acceso denegado'
         });
       }
 
       next();
 
     } catch (error) {
-      return res.status(500).json({
-        message: 'Error en autorización'
-      });
+      console.error('Error en autorización:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
     }
   };
 };

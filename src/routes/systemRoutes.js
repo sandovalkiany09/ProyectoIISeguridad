@@ -1,5 +1,6 @@
 import express from 'express';
 import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import pool from '../config/db.js';
 
 const router = express.Router();
 
@@ -82,16 +83,29 @@ router.delete('/productos/:id', verifyToken, authorizeRoles(1), deleteProducto);
 
 /**
  * =========================
- * LOGS Y REPORTES
+ * LOGS 
  * =========================
  */
 
-router.get('/logs', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Logs de auditoría' });
-});
+router.get('/auditoria', verifyToken, authorizeRoles(1), async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        l.id,
+        u.username AS usuario,
+        l.accion,
+        l.ip,
+        l.fecha
+      FROM logs_auditoria l
+      LEFT JOIN usuarios u ON l.usuario_id = u.id
+      ORDER BY l.fecha DESC
+    `);
 
-router.get('/reportes', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Reportes del sistema' });
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener auditoría' });
+  }
 });
 
 export default router;
