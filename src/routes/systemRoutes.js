@@ -36,25 +36,24 @@ router.delete('/usuarios/:id', verifyToken, authorizeRoles(1), (req, res) => {
  * =========================
  */
 
-// Leer roles
-router.get('/roles', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Lista de roles' });
-});
+import {
+  getRoles,
+  createRole,
+  patchRole,
+  deleteRole
+} from '../controllers/roleController.js';
 
-// Crear rol
-router.post('/roles', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Rol creado' });
-});
+// Ver roles (solo admin)
+router.get('/roles', verifyToken, authorizeRoles(1), getRoles);
 
-// Actualizar rol
-router.put('/roles/:id', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Rol actualizado' });
-});
+// Crear rol (solo admin)
+router.post('/roles', verifyToken, authorizeRoles(1), createRole);
 
-// Eliminar rol
-router.delete('/roles/:id', verifyToken, authorizeRoles(1), (req, res) => {
-  res.json({ message: 'Rol eliminado' });
-});
+// Actualizar rol (solo admin)
+router.patch('/roles/:id', verifyToken, authorizeRoles(1), patchRole);
+
+// Eliminar rol (solo admin)
+router.delete('/roles/:id', verifyToken, authorizeRoles(1), deleteRole);
 
 
 /**
