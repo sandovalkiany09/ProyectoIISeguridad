@@ -1,0 +1,77 @@
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — SecurePanel
+   Paleta: Crystal Blue — Deep Glass Edition
+═══════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+
+:root {
+  /* ── Paleta de colores ── */
+  --c-deep:       #0a1428;
+  --c-navy:       #0f1e3d;
+  --c-royal:      #1e3a7a;
+  --c-cobalt:     #2a5aaa;
+  --c-sky:        #4a9ed4;
+  --c-crystal:    #6dcaf0;
+  --c-ice:        #a8dcf5;
+  --c-mist:       #d8f0fa;
+
+  /* ── Superficies glass — más transparentes y profundas ── */
+  --glass-01:         rgba(10, 20, 50, 0.35);
+  --glass-02:         rgba(15, 30, 70, 0.45);
+  --glass-03:         rgba(20, 45, 100, 0.25);
+  --glass-04:         rgba(6, 12, 30, 0.55);        /* nueva: superficie oscura profunda */
+  --glass-border:     rgba(80, 180, 230, 0.18);
+  --glass-border-bright: rgba(100, 210, 255, 0.35); /* nueva: borde iluminado */
+  --glass-shine:      rgba(160, 220, 248, 0.07);
+  --glass-shine-top:  rgba(200, 235, 255, 0.12);    /* nueva: brillo superior */
+
+  /* ── Texto ── */
+  --text-100: #f0f8ff;
+  --text-200: #b8d8f2;
+  --text-300: rgba(184, 216, 242, 0.6);
+  --text-400: rgba(184, 216, 242, 0.35);
+  --text-500: rgba(184, 216, 242, 0.2);             /* nueva: muy sutil */
+
+  /* ── Acento & estados ── */
+  --accent:           #4ab8e8;
+  --accent-dim:       rgba(74, 184, 232, 0.28);
+  --accent-glow:      rgba(74, 184, 232, 0.5);
+  --accent-ultra-dim: rgba(74, 184, 232, 0.1);      /* nueva */
+  --success:          #3de8b0;
+  --warning:          #e8c040;
+  --danger:           #e85070;
+  --danger-dim:       rgba(232, 80, 112, 0.2);
+
+  /* ── Fondos ── */
+  --bg-base:    #050d1e;
+  --bg-deep:    #080f20;
+  --bg-surface: #0c1830;
+  --bg-overlay: rgba(4, 8, 20, 0.85);               /* nueva: overlay oscuro */
+
+  /* ── Radios y espaciado ── */
+  --r-sm:  8px;
+  --r-md:  14px;
+  --r-lg:  20px;
+  --r-xl:  28px;
+  --r-2xl: 36px;
+
+  /* ── Tipografía ── */
+  --font-display: 'Outfit', sans-serif;
+  --font-body:    'Nunito', sans-serif;
+
+  /* ── Sombras ── */
+  --shadow-sm:          0 2px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md:          0 8px 32px rgba(0, 0, 0, 0.55);
+  --shadow-lg:          0 24px 64px rgba(0, 0, 0, 0.65);
+  --shadow-glow:        0 0 40px rgba(74, 184, 232, 0.15);
+  --shadow-glow-strong: 0 0 60px rgba(74, 184, 232, 0.28);
+  --shadow-inset:       inset 0 1px 0 rgba(200, 235, 255, 0.08); /* nueva */
+
+  /* ── Transiciones ── */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-fast:   0.15s;
+  --t-base:   0.25s;
+  --t-slow:   0.4s;
+}

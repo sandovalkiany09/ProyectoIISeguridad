@@ -1,23 +1,35 @@
+import 'dotenv/config';
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import pool from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import systemRoutes from './src/routes/systemRoutes.js';
 
 const app = express();
 
-// Middleware para leer JSON
+//Fix __dirname en ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middleware
 app.use(express.json());
 
-// Rutas de autenticación
-app.use('/api/auth', authRoutes);
+// Archivos estáticos
+app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Rutas 
+// Rutas API
+app.use('/api/auth', authRoutes);
 app.use('/api', systemRoutes);
 
-/**
- * Ruta de prueba para verificar conexión a la base de datos
- */
-app.get('/', async (req, res) => {
+// Ruta principal
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+// Ruta de prueba BD
+app.get('/test-db', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
     res.json({
@@ -32,7 +44,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Puerto del servidor
+// Puerto
 const PORT = 3000;
 
 app.listen(PORT, () => {

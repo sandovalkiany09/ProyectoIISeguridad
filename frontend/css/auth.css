@@ -1,0 +1,305 @@
+/* ═══════════════════════════════════════════════════════════════
+   AUTH.CSS — Pantalla de inicio de sesión
+   Secciones:
+     1. Contenedor principal
+     2. Panel izquierdo (visual)
+     3. Panel derecho (formulario)
+     4. Logo
+     5. Formulario y botón
+     6. Animaciones de vista
+     7. Responsive
+═══════════════════════════════════════════════════════════════ */
+
+
+/* ─────────────────────────────────────────
+   1. CONTENEDOR PRINCIPAL
+───────────────────────────────────────── */
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  z-index: 9000;
+  background: linear-gradient(140deg, #060e22 0%, #0c1836 40%, #080e24 70%, #050c1c 100%);
+  overflow: hidden;
+}
+
+
+/* ─────────────────────────────────────────
+   2. PANEL IZQUIERDO (visual / decorativo)
+───────────────────────────────────────── */
+
+.auth-panel-left {
+  flex: 0 0 48%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 300px;
+}
+
+/* Imagen de fondo — cubre el panel completo */
+.auth-panel-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.35;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Orbe animado de brillo */
+.auth-panel-left .panel-orb {
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(94, 184, 232, 0.18) 0%, transparent 65%);
+  animation: nebula-drift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Overlay de gradiente sobre la imagen */
+.auth-panel-left::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg,  rgba(6, 14, 34, 0.0)  0%, rgba(6, 14, 34, 0.8)  100%),
+    linear-gradient(180deg, rgba(6, 14, 34, 0.2)  0%, rgba(6, 14, 34, 0.6) 80%, rgba(6, 14, 34, 0.95) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Bloque de texto sobre la imagen */
+.auth-panel-left .panel-copy {
+  position: relative;
+  z-index: 3;
+  padding: 0 44px 44px;
+}
+
+.panel-copy-headline {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-100);
+  margin-bottom: 12px;
+}
+
+.panel-copy-headline span {
+  color: var(--c-crystal);
+}
+
+.panel-copy-sub {
+  font-size: 0.88rem;
+  color: var(--text-300);
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+
+/* ─────────────────────────────────────────
+   3. PANEL DERECHO (formulario)
+───────────────────────────────────────── */
+
+.auth-panel-right {
+  flex: 0 0 52%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 32px;
+  position: relative;
+}
+
+/* Línea separadora vertical luminosa */
+.auth-separator {
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--glass-border), transparent);
+}
+
+.auth-form-wrap {
+  width: 100%;
+  max-width: 420px;
+}
+
+
+/* ─────────────────────────────────────────
+   4. LOGO
+───────────────────────────────────────── */
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.auth-logo-mark {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--c-royal), var(--c-crystal));
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 32px rgba(94, 184, 232, 0.4);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.auth-logo-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+  mix-blend-mode: luminosity;
+}
+
+.auth-logo-text h1 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.auth-logo-text p {
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+
+/* ─────────────────────────────────────────
+   5. FORMULARIO Y BOTÓN
+───────────────────────────────────────── */
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.auth-title span {
+  color: var(--accent);
+}
+
+.auth-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-400);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Botón de envío */
+.auth-submit-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, var(--c-royal), var(--c-sky));
+  border: none;
+  border-radius: var(--r-md);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  box-shadow: 0 6px 28px rgba(58, 98, 184, 0.4);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--t-base) var(--ease-out);
+}
+
+.auth-submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.12) 100%);
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+
+.auth-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 36px rgba(58, 98, 184, 0.55);
+}
+
+.auth-submit-btn:hover::before {
+  opacity: 1;
+}
+
+.auth-submit-btn:active {
+  transform: translateY(0);
+}
+
+.auth-submit-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Divisor decorativo (por si se necesita en el futuro) */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-400);
+  font-size: 0.78rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(94, 184, 232, 0.14);
+}
+
+
+/* ─────────────────────────────────────────
+   6. ANIMACIÓN DE VISTA ACTIVA
+───────────────────────────────────────── */
+
+.auth-view {
+  display: none;
+}
+
+.auth-view.active {
+  display: flex;
+  flex-direction: column;
+  animation: fade-up 0.35s var(--ease-out) both;
+}
+
+
+/* ─────────────────────────────────────────
+   7. RESPONSIVE
+───────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .auth-panel-left  { display: none; }
+  .auth-panel-right { flex: 1; }
+}
+
+@media (max-width: 480px) {
+  .auth-panel-right { padding: 24px 20px; }
+  .auth-title       { font-size: 1.4rem; }
+}
