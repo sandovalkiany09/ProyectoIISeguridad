@@ -12,42 +12,43 @@ const __dirname  = path.dirname(__filename);
 
 const app = express();
 
-// ════════════════════════════════════════════════════════
-//  MIDDLEWARES
-// ════════════════════════════════════════════════════════
-
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: true, credentials: true }));
 
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
-
-// Cabeceras de seguridad
+// RS-06: Cabeceras de seguridad HTTP
 app.use((req, res, next) => {
+  // Previene MIME sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
+  // Previene clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
+  // Controla informacion de referrer
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // RS-02: Content Security Policy — restringe origenes de scripts, estilos, iframes
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' https://fonts.googleapis.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data:; " +
+    "connect-src 'self'; " +
+    "frame-ancestors 'none';"
+  );
+  // HSTS solo en produccion (requiere HTTPS)
   if (process.env.NODE_ENV === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
   next();
 });
 
-// ════════════════════════════════════════════════════════
-//  FRONTEND ESTÁTICO
-//  Express sirve la carpeta frontend/ en el mismo puerto
-// ════════════════════════════════════════════════════════
+// Servir frontend estatico desde la carpeta frontend/
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// ════════════════════════════════════════════════════════
-//  RUTAS DE LA API
-// ════════════════════════════════════════════════════════
+// Rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api',      systemRoutes);
 
-// Verificación de BD
+// Verificacion de BD
 app.get('/health', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
@@ -57,16 +58,11 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Fallback: Express 5 requiere '/{*path}' en lugar de '*'
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-// ════════════════════════════════════════════════════════
-//  INICIO
-// ════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`\nServidor corriendo en http://localhost:${PORT}`);
   console.log(`  Frontend  ->  http://localhost:${PORT}/`);

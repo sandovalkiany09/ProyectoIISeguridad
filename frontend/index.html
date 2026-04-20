@@ -1,68 +1,43 @@
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SecurePanel — Sistema de Seguridad</title>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecurePanel — Sistema de Seguridad</title>
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/variables.css" />
-    <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/components.css" />
-    <link rel="stylesheet" href="css/layout.css" />
-    <link rel="stylesheet" href="css/auth.css" />
-  </head>
-  <body>
-    
-      <!-- FONDO GLOBAL -->
+  <!-- FONDO GLOBAL POR SECCIÓN -->
   <div id="section-bg"></div>
   <div id="section-bg-tint"></div>
-  <!-- ══════════════════════════════════════════════════════════════
-      PARTÍCULAS DE FONDO (decorativo)
-  ══════════════════════════════════════════════════════════════════ -->
   <div class="particles-grid" aria-hidden="true"></div>
 
   <!-- ══════════════════════════════════════════════════════════════
-      PANTALLA DE AUTENTICACIÓN
+       PANTALLA DE AUTENTICACIÓN
   ══════════════════════════════════════════════════════════════════ -->
   <div id="auth-screen" class="auth-screen">
 
-    <!-- Panel izquierdo – una sola imagen de fondo estética -->
     <div class="auth-panel-left">
       <div class="panel-orb" aria-hidden="true"></div>
-
-      <!-- Una única imagen de portada, cubriendo el panel completo -->
-      <img
-        class="auth-panel-bg-img"
-        src="./img/3.png"
-        alt=""
-        loading="eager"
-      />
-
+      <img class="auth-panel-bg-img" src="img/3.png" alt="" loading="eager" />
       <div class="panel-copy anim-fade-up">
-        <p class="panel-copy-headline">
-          Gestión segura<br>de tu <span>infraestructura</span>
-        </p>
-        <p class="panel-copy-sub">
-          Control de usuarios, roles y productos con autenticación JWT y auditoría completa.
-        </p>
+        <p class="panel-copy-headline">Gestión segura<br>de tu <span>infraestructura</span></p>
+        <p class="panel-copy-sub">Control de usuarios, roles y productos con autenticación JWT y auditoría completa.</p>
       </div>
     </div>
 
-    <!-- Panel derecho – solo login -->
     <div class="auth-panel-right">
       <div class="auth-separator" aria-hidden="true"></div>
-
       <div class="auth-form-wrap">
 
-        <!-- Logo: una imagen pequeña y limpia -->
         <div class="auth-logo anim-fade-up">
           <div class="auth-logo-mark">
-            <img
-              <img src="./img/2.jpg">
-              alt="Logo SecurePanel"
-              loading="eager"
-            />
+            <img src="./img/2.jpg" alt="Logo SecurePanel" loading="eager" />
           </div>
           <div class="auth-logo-text">
             <h1>SecurePanel</h1>
@@ -70,13 +45,10 @@
           </div>
         </div>
 
-        <!-- ── LOGIN (único formulario) ── -->
         <div id="auth-login" class="auth-view active">
           <h2 class="auth-title">Bienvenido <span>de vuelta</span></h2>
           <p class="auth-subtitle">Ingresa tus credenciales para acceder al panel.</p>
-
           <div id="login-error" class="alert alert-error" style="display:none" role="alert"></div>
-
           <div class="auth-form">
             <div class="form-group">
               <label class="form-label" for="login-username">Usuario</label>
@@ -86,53 +58,31 @@
                     <path stroke-linecap="round" d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </span>
-                <input
-                  class="form-input"
-                  type="text"
-                  id="login-username"
-                  name="username"
-                  placeholder="Tu nombre de usuario"
-                  autocomplete="username"
-                />
+                <input class="form-input" type="text" id="login-username" name="username"
+                  placeholder="Tu nombre de usuario" autocomplete="username" />
               </div>
             </div>
-
             <div class="form-group">
               <label class="form-label" for="login-password">Contraseña</label>
               <div class="input-icon-wrapper" style="position:relative">
                 <span class="input-icon" aria-hidden="true">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" d="M7 11V7a5 5 0 0110 0v4"/>
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path stroke-linecap="round" d="M7 11V7a5 5 0 0110 0v4"/>
                   </svg>
                 </span>
-                <input
-                  class="form-input"
-                  type="password"
-                  id="login-password"
-                  name="password"
-                  placeholder="••••••••"
-                  autocomplete="current-password"
-                  style="padding-right: 44px"
-                />
-                <button
-                  id="toggle-login-pass"
-                  type="button"
-                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-400);display:flex;align-items:center;transition:color 0.15s"
-                  aria-label="Mostrar contraseña"
-                >
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <input class="form-input" type="password" id="login-password" name="password"
+                  placeholder="••••••••" autocomplete="current-password" style="padding-right:44px" />
+                <button id="toggle-login-pass" type="button" aria-label="Mostrar contraseña"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-400);display:flex;align-items:center;transition:color 0.15s">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
                 </button>
               </div>
             </div>
-
-            <button
-              id="btn-login"
-              type="button"
-              class="auth-submit-btn"
-              onclick="Auth.doLogin(event)"
-            >
-              Iniciar sesión
-            </button>
+            <!-- SIN onclick — listener en utils.js -->
+            <button id="btn-login" type="button" class="auth-submit-btn">Iniciar sesión</button>
           </div>
         </div>
 
@@ -142,20 +92,14 @@
 
 
   <!-- ══════════════════════════════════════════════════════════════
-      APLICACIÓN PRINCIPAL
+       APLICACIÓN PRINCIPAL
   ══════════════════════════════════════════════════════════════════ -->
   <div id="app" style="display:none">
 
-    <!-- ── SIDEBAR ── -->
     <aside id="sidebar" aria-label="Navegación principal">
       <div class="sidebar-logo">
-        <!-- Una sola imagen pequeña como logotipo del sidebar -->
         <div class="logo-mark">
-          <img
-            src="./img/4.jpg"
-            alt="Logo"
-            loading="lazy"
-          />
+          <img src="./img/4.jpg" alt="Logo" loading="lazy" />
         </div>
         <div class="logo-text-wrap">
           <div class="logo-name">SecurePanel</div>
@@ -165,72 +109,60 @@
 
       <nav class="sidebar-nav" role="navigation">
         <p class="nav-section-label">Principal</p>
-
         <div class="nav-item active" data-page="dashboard" role="button" tabindex="0" aria-label="Dashboard">
           <span class="nav-item-icon" aria-hidden="true">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
               <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
               <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
             </svg>
-          </span>
-          Dashboard
+          </span>Dashboard
         </div>
 
         <p class="nav-section-label">Gestión</p>
-
         <div class="nav-item" data-page="usuarios" data-roles="1,2,3" role="button" tabindex="0">
           <span class="nav-item-icon" aria-hidden="true">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
               <path stroke-linecap="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
               <path stroke-linecap="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
             </svg>
-          </span>
-          Usuarios
+          </span>Usuarios
         </div>
-
         <div class="nav-item" data-page="roles" data-roles="1" role="button" tabindex="0">
           <span class="nav-item-icon" aria-hidden="true">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-          </span>
-          Roles
+          </span>Roles
         </div>
-
         <div class="nav-item" data-page="productos" data-roles="1,2,3" role="button" tabindex="0">
           <span class="nav-item-icon" aria-hidden="true">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
             </svg>
-          </span>
-          Productos
+          </span>Productos
         </div>
 
         <p class="nav-section-label">Sistema</p>
-
         <div class="nav-item" data-page="auditoria" data-roles="1" role="button" tabindex="0">
           <span class="nav-item-icon" aria-hidden="true">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-          </span>
-          Auditoría
+          </span>Auditoría
         </div>
       </nav>
 
       <div class="sidebar-footer">
         <div class="user-card">
-          <div class="avatar">
-            <span id="sb-avatar-letter">?</span>
-          </div>
+          <div class="avatar"><span id="sb-avatar-letter">?</span></div>
           <div class="user-card-info">
             <div class="user-card-name" id="sb-name">—</div>
             <div class="user-card-role" id="sb-role">—</div>
           </div>
         </div>
-
-        <button class="btn btn-danger btn-full btn-sm" onclick="Auth.logout()" style="gap:8px">
+        <!-- SIN onclick — listener en utils.js -->
+        <button id="btn-logout" class="btn btn-danger btn-full btn-sm" style="gap:8px">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
             <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
@@ -240,10 +172,7 @@
       </div>
     </aside>
 
-    <!-- ── MAIN ── -->
     <div id="main-content">
-
-      <!-- Topbar -->
       <header id="topbar">
         <div class="topbar-heading">
           <h1 class="topbar-title" id="topbar-title">Panel de <span>control</span></h1>
@@ -254,12 +183,10 @@
         </div>
       </header>
 
-      <!-- Contenido de páginas -->
       <div class="page-content">
 
-        <!-- ════════════ DASHBOARD ════════════ -->
+        <!-- DASHBOARD -->
         <div id="view-dashboard" class="view active">
-
           <div class="stats-grid">
             <div class="glass-card stat-card anim-fade-up delay-1">
               <div class="stat-card-glow"></div>
@@ -286,21 +213,13 @@
               <div class="stat-sub">en auditoría</div>
             </div>
           </div>
-
           <div class="table-section glass-card anim-fade-up delay-5">
             <div class="section-header">
               <span class="section-title">Actividad reciente</span>
             </div>
             <div class="data-table-wrapper">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Usuario</th>
-                    <th>Acción</th>
-                    <th>IP</th>
-                    <th>Fecha</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>Usuario</th><th>Acción</th><th>IP</th><th>Fecha</th></tr></thead>
                 <tbody id="dash-log-body">
                   <tr><td colspan="4" style="text-align:center;padding:40px"><span class="spinner spinner-lg"></span></td></tr>
                 </tbody>
@@ -309,7 +228,7 @@
           </div>
         </div>
 
-        <!-- ════════════ USUARIOS ════════════ -->
+        <!-- USUARIOS -->
         <div id="view-usuarios" class="view">
           <div class="table-section glass-card">
             <div class="section-header">
@@ -319,35 +238,20 @@
                   <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
                   </svg>
-                  <input
-                    class="search-input"
-                    type="text"
-                    id="search-usuarios"
-                    placeholder="Buscar usuario..."
-                    oninput="App.filterSection('usuarios')"
-                    aria-label="Buscar usuarios"
-                  />
+                  <!-- SIN oninput — listener en app.js -->
+                  <input class="search-input" type="text" id="search-usuarios"
+                    placeholder="Buscar usuario..." aria-label="Buscar usuarios" />
                 </div>
-                <button
-                  id="btn-new-user"
-                  class="btn btn-primary btn-sm"
-                  onclick="App.openNuevoUsuario()"
-                  style="gap:6px"
-                >
+                <button id="btn-new-user" class="btn btn-primary btn-sm" style="gap:6px">
                   <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Nuevo usuario
+                  </svg>Nuevo usuario
                 </button>
               </div>
             </div>
             <div class="data-table-wrapper">
               <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>#</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Último acceso</th><th>Acciones</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Usuario</th><th>Correo</th><th>Rol</th><th>Último acceso</th><th>Acciones</th></tr></thead>
                 <tbody id="usuarios-body">
                   <tr><td colspan="6" style="text-align:center;padding:50px"><span class="spinner spinner-lg"></span></td></tr>
                 </tbody>
@@ -356,25 +260,22 @@
           </div>
         </div>
 
-        <!-- ════════════ ROLES ════════════ -->
+        <!-- ROLES -->
         <div id="view-roles" class="view">
           <div class="table-section glass-card">
             <div class="section-header">
               <span class="section-title">Roles del sistema</span>
               <div class="section-actions">
-                <button class="btn btn-primary btn-sm" onclick="App.openNuevoRole()" style="gap:6px">
+                <button id="btn-new-role" class="btn btn-primary btn-sm" style="gap:6px">
                   <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Nuevo rol
+                  </svg>Nuevo rol
                 </button>
               </div>
             </div>
             <div class="data-table-wrapper">
               <table class="data-table">
-                <thead>
-                  <tr><th>#</th><th>ID</th><th>Nombre del rol</th><th>Acciones</th></tr>
-                </thead>
+                <thead><tr><th>#</th><th>ID</th><th>Nombre del rol</th><th>Acciones</th></tr></thead>
                 <tbody id="roles-body">
                   <tr><td colspan="4" style="text-align:center;padding:50px"><span class="spinner spinner-lg"></span></td></tr>
                 </tbody>
@@ -383,7 +284,7 @@
           </div>
         </div>
 
-        <!-- ════════════ PRODUCTOS ════════════ -->
+        <!-- PRODUCTOS -->
         <div id="view-productos" class="view">
           <div class="table-section glass-card">
             <div class="section-header">
@@ -393,35 +294,21 @@
                   <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
                   </svg>
-                  <input
-                    class="search-input"
-                    type="text"
-                    id="search-productos"
-                    placeholder="Buscar producto..."
-                    oninput="App.filterSection('productos')"
-                    aria-label="Buscar productos"
-                  />
+                  <input class="search-input" type="text" id="search-productos"
+                    placeholder="Buscar producto..." aria-label="Buscar productos" />
                 </div>
-                <button
-                  id="btn-new-prod"
-                  class="btn btn-primary btn-sm"
-                  onclick="App.openNuevoProducto()"
-                  style="gap:6px"
-                >
+                <button id="btn-new-prod" class="btn btn-primary btn-sm" style="gap:6px">
                   <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Nuevo producto
+                  </svg>Nuevo producto
                 </button>
               </div>
             </div>
             <div class="data-table-wrapper">
               <table class="data-table">
                 <thead>
-                  <tr>
-                    <th>#</th><th>Código</th><th>Nombre</th><th>Descripción</th>
-                    <th style="text-align:right">Cantidad</th><th style="text-align:right">Precio</th><th>Acciones</th>
-                  </tr>
+                  <tr><th>#</th><th>Código</th><th>Nombre</th><th>Descripción</th>
+                  <th style="text-align:right">Cantidad</th><th style="text-align:right">Precio</th><th>Acciones</th></tr>
                 </thead>
                 <tbody id="productos-body">
                   <tr><td colspan="7" style="text-align:center;padding:50px"><span class="spinner spinner-lg"></span></td></tr>
@@ -431,7 +318,7 @@
           </div>
         </div>
 
-        <!-- ════════════ AUDITORÍA ════════════ -->
+        <!-- AUDITORÍA -->
         <div id="view-auditoria" class="view">
           <div class="table-section glass-card">
             <div class="section-header">
@@ -441,22 +328,14 @@
                   <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
                   </svg>
-                  <input
-                    class="search-input"
-                    type="text"
-                    id="search-auditoria"
-                    placeholder="Filtrar eventos..."
-                    oninput="App.filterSection('auditoria')"
-                    aria-label="Filtrar auditoría"
-                  />
+                  <input class="search-input" type="text" id="search-auditoria"
+                    placeholder="Filtrar eventos..." aria-label="Filtrar auditoría" />
                 </div>
               </div>
             </div>
             <div class="data-table-wrapper">
               <table class="data-table">
-                <thead>
-                  <tr><th>#</th><th>Usuario</th><th>Acción</th><th>IP</th><th>Fecha</th></tr>
-                </thead>
+                <thead><tr><th>#</th><th>Usuario</th><th>Acción</th><th>IP</th><th>Fecha</th></tr></thead>
                 <tbody id="auditoria-body">
                   <tr><td colspan="5" style="text-align:center;padding:50px"><span class="spinner spinner-lg"></span></td></tr>
                 </tbody>
@@ -471,7 +350,7 @@
 
 
   <!-- ══════════════════════════════════════════════════════════════
-      MODALES
+       MODALES — SIN onclick, listeners en app.js via data-modal-close
   ══════════════════════════════════════════════════════════════════ -->
 
   <!-- Modal: Usuario -->
@@ -479,15 +358,13 @@
     <div class="modal-box">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-user-title">Nuevo <span>usuario</span></h3>
-        <button class="modal-close-btn" onclick="Modal.close('modal-user')" aria-label="Cerrar">
+        <button class="modal-close-btn" data-modal-close="modal-user" aria-label="Cerrar">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
-
       <input type="hidden" id="edit-user-id" />
-
       <div class="form-row" style="margin-bottom:16px">
         <div class="form-group">
           <label class="form-label" for="u-nombre">Nombre de usuario</label>
@@ -498,12 +375,11 @@
           <input class="form-input" type="email" id="u-email" placeholder="correo@ejemplo.com" autocomplete="off" />
         </div>
       </div>
-
       <div class="form-row" style="margin-bottom:16px">
         <div class="form-group">
           <label class="form-label" for="u-password">
             Contraseña
-            <span id="u-pass-hint" style="color:var(--text-400);font-size:0.7rem;font-weight:400;margin-left:4px">(dejar vacío para no cambiar)</span>
+            <span style="color:var(--text-400);font-size:0.7rem;font-weight:400;margin-left:4px">(dejar vacío para no cambiar)</span>
           </label>
           <input class="form-input" type="password" id="u-password" placeholder="••••••••" autocomplete="new-password" />
         </div>
@@ -514,14 +390,12 @@
           </select>
         </div>
       </div>
-
       <div class="modal-footer">
-        <button class="btn btn-subtle" onclick="Modal.close('modal-user')">Cancelar</button>
-        <button class="btn btn-primary" onclick="App.saveUsuario()" style="gap:7px">
+        <button class="btn btn-subtle" data-modal-close="modal-user">Cancelar</button>
+        <button id="btn-save-user" class="btn btn-primary" style="gap:7px">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          Guardar
+          </svg>Guardar
         </button>
       </div>
     </div>
@@ -532,28 +406,24 @@
     <div class="modal-box" style="max-width:400px">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-role-title">Nuevo <span>rol</span></h3>
-        <button class="modal-close-btn" onclick="Modal.close('modal-role')" aria-label="Cerrar">
+        <button class="modal-close-btn" data-modal-close="modal-role" aria-label="Cerrar">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
-
       <input type="hidden" id="edit-role-id" />
-
       <div class="form-group" style="margin-bottom:8px">
         <label class="form-label" for="r-nombre">Nombre del rol</label>
         <input class="form-input" type="text" id="r-nombre" placeholder="Ej: Supervisor" autocomplete="off" />
         <span class="form-hint">Este nombre aparecerá en todo el sistema.</span>
       </div>
-
       <div class="modal-footer">
-        <button class="btn btn-subtle" onclick="Modal.close('modal-role')">Cancelar</button>
-        <button class="btn btn-primary" onclick="App.saveRole()" style="gap:7px">
+        <button class="btn btn-subtle" data-modal-close="modal-role">Cancelar</button>
+        <button id="btn-save-role" class="btn btn-primary" style="gap:7px">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          Guardar
+          </svg>Guardar
         </button>
       </div>
     </div>
@@ -564,15 +434,13 @@
     <div class="modal-box">
       <div class="modal-header">
         <h3 class="modal-title" id="modal-product-title">Nuevo <span>producto</span></h3>
-        <button class="modal-close-btn" onclick="Modal.close('modal-product')" aria-label="Cerrar">
+        <button class="modal-close-btn" data-modal-close="modal-product" aria-label="Cerrar">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
-
       <input type="hidden" id="edit-prod-id" />
-
       <div class="form-row" style="margin-bottom:16px">
         <div class="form-group">
           <label class="form-label" for="p-codigo">Código</label>
@@ -583,12 +451,10 @@
           <input class="form-input" type="text" id="p-nombre" placeholder="Nombre descriptivo" autocomplete="off" />
         </div>
       </div>
-
       <div class="form-group" style="margin-bottom:16px">
         <label class="form-label" for="p-desc">Descripción</label>
         <input class="form-input" type="text" id="p-desc" placeholder="Descripción opcional del producto" autocomplete="off" />
       </div>
-
       <div class="form-row" style="margin-bottom:8px">
         <div class="form-group">
           <label class="form-label" for="p-cantidad">Cantidad en stock</label>
@@ -599,32 +465,24 @@
           <input class="form-input" type="number" id="p-precio" placeholder="0.00" min="0" step="0.01" />
         </div>
       </div>
-
       <div class="modal-footer">
-        <button class="btn btn-subtle" onclick="Modal.close('modal-product')">Cancelar</button>
-        <button class="btn btn-primary" onclick="App.saveProducto()" style="gap:7px">
+        <button class="btn btn-subtle" data-modal-close="modal-product">Cancelar</button>
+        <button id="btn-save-product" class="btn btn-primary" style="gap:7px">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          Guardar
+          </svg>Guardar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Container -->
   <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <!-- ── Scripts ── -->
+  <!-- Scripts externos únicamente -->
   <script src="js/utils.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      Auth.init();
-    });
-  </script>
 
-  </body>
-  </html>
+</body>
+</html>

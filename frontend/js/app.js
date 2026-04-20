@@ -1,144 +1,169 @@
 /* ═══════════════════════════════════════════
    APP — Lógica principal de la aplicación
-   Vistas: dashboard, usuarios, roles, productos, auditoría
+   Sin onclick inline — usa delegación de eventos
+   para los botones generados dinámicamente.
 ═══════════════════════════════════════════ */
 
 const App = (() => {
 
-  /* ── Estado local ── */
   const state = {
     user: null,
-    data: {
-      usuarios:  [],
-      roles:     [],
-      productos: [],
-      auditoria: []
-    }
+    data: { usuarios: [], roles: [], productos: [], auditoria: [] }
   };
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      INIT
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   function init(user) {
     state.user = user;
     _buildSidebar();
     _bindNav();
     _setUserBadge();
-    _applyButtonPermissionsCreate(); 
-    _applyButtonPermissionsProduct(); 
+    _applyButtonPermissions();
+    _bindDelegatedEvents();   // ← reemplaza todos los onclick dinámicos
     navigate('dashboard');
   }
 
-  /* ────────────────────────────────────────
-     SIDEBAR — visibilidad por rol
-  ──────────────────────────────────────── */
+  /* ════════════════════════════════════════
+     DELEGACIÓN DE EVENTOS
+     Los botones de editar/eliminar se generan
+     dinámicamente en el HTML de las tablas.
+     En lugar de onclick inline, usamos un solo
+     listener en el tbody de cada tabla.
+  ════════════════════════════════════════ */
+  function _bindDelegatedEvents() {
+    // Tabla de usuarios
+    document.getElementById('usuarios-body')
+      ?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const { action, id, name } = btn.dataset;
+        if (action === 'edit-user')   App.editUsuario(parseInt(id));
+        if (action === 'delete-user') App.deleteUsuario(parseInt(id), name);
+      });
+
+    // Tabla de roles
+    document.getElementById('roles-body')
+      ?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const { action, id, name } = btn.dataset;
+        if (action === 'edit-role')   App.editRole(parseInt(id));
+        if (action === 'delete-role') App.deleteRole(parseInt(id), name);
+      });
+
+    // Tabla de productos
+    document.getElementById('productos-body')
+      ?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const { action, id, name } = btn.dataset;
+        if (action === 'edit-product')   App.editProducto(parseInt(id));
+        if (action === 'delete-product') App.deleteProducto(parseInt(id), name);
+      });
+  }
+
+  /* ════════════════════════════════════════
+     SIDEBAR
+  ════════════════════════════════════════ */
   function _buildSidebar() {
     const rolId = state.user.rol_id;
-
     document.querySelectorAll('.nav-item[data-roles]').forEach(el => {
       const allowed = el.dataset.roles.split(',').map(Number);
       el.style.display = allowed.includes(rolId) ? '' : 'none';
     });
   }
 
-  function _applyButtonPermissionsCreate() {
-  const rolId = state.user.rol_id;
+  function _applyButtonPermissions() {
+    const rolId = state.user.rol_id;
 
-  // Solo superadmin (1) y puede crear usuarios 
-  const canCreate = [1].includes(rolId);
+    // Solo superadmin (1) puede crear usuarios
+    const btnNewUser = document.getElementById('btn-new-user');
+    if (btnNewUser) btnNewUser.style.display = rolId === 1 ? '' : 'none';
 
-  const btnNewUser = document.getElementById('btn-new-user');
- 
-  if (btnNewUser) btnNewUser.style.display = canCreate ? '' : 'none';
-}
-
-function _applyButtonPermissionsProduct() {
-  const rolId = state.user.rol_id;
-
-  const canCreate = [1, 3].includes(rolId);
-
-  const btnNewProd = document.getElementById('btn-new-prod');
-
-  if (btnNewProd) btnNewProd.style.display = canCreate ? '' : 'none';
-}
+    // Superadmin (1) y registrador (3) pueden crear productos
+    const btnNewProd = document.getElementById('btn-new-prod');
+    if (btnNewProd) btnNewProd.style.display = [1, 3].includes(rolId) ? '' : 'none';
+  }
 
   function _setUserBadge() {
     const u = state.user;
-    const name = u.username || '—';
+    const name    = u.username || '—';
     const rolData = ROLE_MAP[u.rol_id] || { name: 'Rol ' + u.rol_id, class: 'badge-neutral' };
-
     document.getElementById('sb-avatar-letter').textContent = name[0].toUpperCase();
     document.getElementById('sb-name').textContent  = name;
     document.getElementById('sb-role').textContent  = rolData.name;
     document.getElementById('topbar-role').innerHTML = `<span class="badge ${rolData.class}">${rolData.name}</span>`;
   }
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      NAVEGACIÓN
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   const PAGE_META = {
-    dashboard: { title: 'Panel de <span>control</span>',   sub: 'Resumen general del sistema' },
-    usuarios:  { title: 'Gestión de <span>usuarios</span>', sub: 'Administración de cuentas' },
-    roles:     { title: 'Gestión de <span>roles</span>',    sub: 'Control de acceso basado en roles' },
+    dashboard: { title: 'Panel de <span>control</span>',     sub: 'Resumen general del sistema' },
+    usuarios:  { title: 'Gestión de <span>usuarios</span>',  sub: 'Administración de cuentas' },
+    roles:     { title: 'Gestión de <span>roles</span>',     sub: 'Control de acceso basado en roles' },
     productos: { title: 'Catálogo de <span>productos</span>', sub: 'Inventario y gestión de productos' },
     auditoria: { title: 'Registro de <span>auditoría</span>', sub: 'Historial de eventos del sistema' }
+  };
+
+  const SECTION_BG = {
+    dashboard: 'img/5.jpg',
+    usuarios:  'img/1.jpg',
+    roles:     'img/2.jpg',
+    productos: 'img/3.png',
+    auditoria: 'img/4.png'
   };
 
   function _bindNav() {
     document.querySelectorAll('.nav-item[data-page]').forEach(el => {
       el.addEventListener('click', () => navigate(el.dataset.page));
     });
-  }const SECTION_BG = {
-  dashboard: 'img/5.jpg',
-  usuarios:  'img/1.jpg',
-  roles:     'img/2.jpg',
-  productos: 'img/3.png',
-  auditoria: 'img/4.jpg'
-};
-
-  function navigate(page) {
-  // ─── NAV ACTIVO ───
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.page === page);
-  });
-
-  // ─── CAMBIO DE VISTA ───
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const view = document.getElementById('view-' + page);
-  if (view) view.classList.add('active');
-
-  // ─── TOPBAR ───
-  const meta = PAGE_META[page] || { title: page, sub: '' };
-  document.getElementById('topbar-title').innerHTML  = meta.title;
-  document.getElementById('topbar-sub').textContent = meta.sub;
-
-  // ─── 🎨 FONDO DINÁMICO ───
-  const bg = document.getElementById('section-bg');
-  if (bg) {
-    bg.style.opacity = 0;
-
-    setTimeout(() => {
-      const img = SECTION_BG[page] || SECTION_BG.dashboard;
-      bg.style.backgroundImage = `url('${img}')`;
-      bg.style.opacity = 1;
-    }, 200);
   }
 
-  // ─── DATA ───
-  const loaders = {
-    dashboard: loadDashboard,
-    usuarios:  loadUsuarios,
-    roles:     loadRoles,
-    productos: loadProductos,
-    auditoria: loadAuditoria
-  };
+  function navigate(page) {
+    // Nav activo
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === page);
+    });
 
-  if (loaders[page]) loaders[page]();
-}
+    // Vista activa
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const view = document.getElementById('view-' + page);
+    if (view) view.classList.add('active');
 
-  /* ────────────────────────────────────────
+    // Topbar
+    const meta = PAGE_META[page] || { title: page, sub: '' };
+    document.getElementById('topbar-title').innerHTML  = meta.title;
+    document.getElementById('topbar-sub').textContent  = meta.sub;
+
+    // Fondo dinámico
+    const bg   = document.getElementById('section-bg');
+    const tint = document.getElementById('section-bg-tint');
+    if (bg) {
+      bg.style.opacity   = 0;
+      if (tint) tint.style.opacity = 0;
+      setTimeout(() => {
+        bg.style.backgroundImage = `url('${SECTION_BG[page] || SECTION_BG.dashboard}')`;
+        bg.style.opacity   = 1;
+        if (tint) tint.style.opacity = 1;
+      }, 200);
+    }
+
+    // Cargar datos
+    const loaders = {
+      dashboard: loadDashboard,
+      usuarios:  loadUsuarios,
+      roles:     loadRoles,
+      productos: loadProductos,
+      auditoria: loadAuditoria
+    };
+    if (loaders[page]) loaders[page]();
+  }
+
+  /* ════════════════════════════════════════
      DASHBOARD
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   async function loadDashboard() {
     try {
       const promises = [
@@ -146,11 +171,9 @@ function _applyButtonPermissionsProduct() {
         RolesAPI.getAll().catch(() => []),
         ProductosAPI.getAll().catch(() => [])
       ];
-
       if (state.user.rol_id === 1) {
         promises.push(AuditoriaAPI.getAll().catch(() => []));
       }
-
       const [usuarios, roles, productos, logs] = await Promise.all(promises);
 
       document.getElementById('stat-usuarios').textContent  = usuarios.length;
@@ -158,7 +181,6 @@ function _applyButtonPermissionsProduct() {
       document.getElementById('stat-productos').textContent = productos.length;
       document.getElementById('stat-logs').textContent      = logs ? logs.length : '—';
 
-      // Actividad reciente (solo admin)
       const tbody = document.getElementById('dash-log-body');
       if (logs && logs.length) {
         tbody.innerHTML = logs.slice(0, 10).map(l => `
@@ -176,18 +198,16 @@ function _applyButtonPermissionsProduct() {
     }
   }
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      USUARIOS
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   async function loadUsuarios() {
     document.getElementById('usuarios-body').innerHTML = loadingRow(6);
     try {
       const data = await UsuariosAPI.getAll();
       state.data.usuarios = data;
       renderUsuarios(data);
-    } catch (err) {
-      Toast.error(err.message);
-    }
+    } catch (err) { Toast.error(err.message); }
   }
 
   function renderUsuarios(rows) {
@@ -210,10 +230,12 @@ function _applyButtonPermissionsProduct() {
           <td>
             <div class="td-actions">
               ${isAdmin ? `
-                <button class="btn btn-ghost btn-xs" onclick="App.editUsuario(${u.id})" title="Editar">
+                <button class="btn btn-ghost btn-xs"
+                  data-action="edit-user" data-id="${u.id}" title="Editar">
                   ${Icons.edit}
                 </button>
-                <button class="btn btn-danger btn-xs" onclick="App.deleteUsuario(${u.id},'${u.nombre}')" title="Eliminar">
+                <button class="btn btn-danger btn-xs"
+                  data-action="delete-user" data-id="${u.id}" data-name="${u.nombre}" title="Eliminar">
                   ${Icons.trash}
                 </button>` : '<span style="color:var(--text-400)">—</span>'}
             </div>
@@ -245,21 +267,17 @@ function _applyButtonPermissionsProduct() {
   async function saveUsuario() {
     const id  = document.getElementById('edit-user-id').value;
     const rol = parseInt(document.getElementById('u-rol').value);
-
     const body = {
       nombre:   document.getElementById('u-nombre').value.trim(),
       email:    document.getElementById('u-email').value.trim(),
       password: document.getElementById('u-password').value,
       rol_id:   rol
     };
-
     if (!body.nombre || !body.email || (!id && !body.password) || !body.rol_id) {
       Toast.warning('Completa todos los campos obligatorios.');
       return;
     }
-
     if (id && !body.password) delete body.password;
-
     try {
       if (id) {
         await UsuariosAPI.update(id, body);
@@ -282,9 +300,9 @@ function _applyButtonPermissionsProduct() {
     } catch (err) { Toast.error(err.message); }
   }
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      ROLES
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   async function loadRoles() {
     document.getElementById('roles-body').innerHTML = loadingRow(4);
     try {
@@ -304,10 +322,12 @@ function _applyButtonPermissionsProduct() {
           <td style="font-weight:500">${r.nombre}</td>
           <td>
             <div class="td-actions">
-              <button class="btn btn-ghost btn-xs" onclick="App.editRole(${r.id})" title="Editar">
+              <button class="btn btn-ghost btn-xs"
+                data-action="edit-role" data-id="${r.id}" title="Editar">
                 ${Icons.edit}
               </button>
-              <button class="btn btn-danger btn-xs" onclick="App.deleteRole(${r.id},'${r.nombre}')" title="Eliminar">
+              <button class="btn btn-danger btn-xs"
+                data-action="delete-role" data-id="${r.id}" data-name="${r.nombre}" title="Eliminar">
                 ${Icons.trash}
               </button>
             </div>
@@ -317,8 +337,7 @@ function _applyButtonPermissionsProduct() {
   }
 
   function _populateRoleSelect(roles) {
-    const sels = ['u-rol', 'reg-rol'];
-    sels.forEach(selId => {
+    ['u-rol'].forEach(selId => {
       const sel = document.getElementById(selId);
       if (!sel) return;
       sel.innerHTML = '<option value="">Seleccionar rol...</option>' +
@@ -345,9 +364,7 @@ function _applyButtonPermissionsProduct() {
   async function saveRole() {
     const id     = document.getElementById('edit-role-id').value;
     const nombre = document.getElementById('r-nombre').value.trim();
-
     if (!nombre) { Toast.warning('El nombre del rol es obligatorio.'); return; }
-
     try {
       if (id) {
         await RolesAPI.update(id, nombre);
@@ -370,9 +387,9 @@ function _applyButtonPermissionsProduct() {
     } catch (err) { Toast.error(err.message); }
   }
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      PRODUCTOS
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   async function loadProductos() {
     document.getElementById('productos-body').innerHTML = loadingRow(7);
     try {
@@ -383,7 +400,7 @@ function _applyButtonPermissionsProduct() {
   }
 
   function renderProductos(rows) {
-    const rolId  = state.user.rol_id;
+    const rolId   = state.user.rol_id;
     const canEdit = [1, 3].includes(rolId);
     const canDel  = rolId === 1;
 
@@ -400,8 +417,12 @@ function _applyButtonPermissionsProduct() {
           <td style="color:var(--success);font-weight:600;text-align:right">${fmtMoney(p.precio)}</td>
           <td>
             <div class="td-actions">
-              ${canEdit ? `<button class="btn btn-ghost btn-xs" onclick="App.editProducto(${p.id})" title="Editar">${Icons.edit}</button>` : ''}
-              ${canDel  ? `<button class="btn btn-danger btn-xs" onclick="App.deleteProducto(${p.id},'${p.nombre.replace(/'/g,'\\\'')}')" title="Eliminar">${Icons.trash}</button>` : ''}
+              ${canEdit ? `<button class="btn btn-ghost btn-xs"
+                data-action="edit-product" data-id="${p.id}" title="Editar">
+                ${Icons.edit}</button>` : ''}
+              ${canDel ? `<button class="btn btn-danger btn-xs"
+                data-action="delete-product" data-id="${p.id}" data-name="${p.nombre.replace(/'/g, '&#39;')}" title="Eliminar">
+                ${Icons.trash}</button>` : ''}
               ${!canEdit && !canDel ? '<span style="color:var(--text-400)">—</span>' : ''}
             </div>
           </td>
@@ -439,12 +460,10 @@ function _applyButtonPermissionsProduct() {
       cantidad:    parseInt(document.getElementById('p-cantidad').value) || 0,
       precio:      parseFloat(document.getElementById('p-precio').value) || 0
     };
-
     if (!body.codigo || !body.nombre) {
       Toast.warning('Código y nombre son obligatorios.');
       return;
     }
-
     try {
       if (id) {
         await ProductosAPI.update(id, body);
@@ -467,16 +486,16 @@ function _applyButtonPermissionsProduct() {
     } catch (err) { Toast.error(err.message); }
   }
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      AUDITORÍA
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   async function loadAuditoria() {
     document.getElementById('auditoria-body').innerHTML = loadingRow(5);
     try {
       const data = await AuditoriaAPI.getAll();
       state.data.auditoria = data;
       renderAuditoria(data);
-    } catch (err) {
+    } catch {
       document.getElementById('auditoria-body').innerHTML = emptyRow(5, 'Sin permisos para ver auditoría');
     }
   }
@@ -494,9 +513,9 @@ function _applyButtonPermissionsProduct() {
       : emptyRow(5, 'No hay registros de auditoría');
   }
 
-  /* ────────────────────────────────────────
+  /* ════════════════════════════════════════
      FILTRADO / BÚSQUEDA
-  ──────────────────────────────────────── */
+  ════════════════════════════════════════ */
   function filterSection(section) {
     const q = document.getElementById('search-' + section)?.value.toLowerCase() || '';
     if (section === 'usuarios') {
@@ -511,36 +530,12 @@ function _applyButtonPermissionsProduct() {
     }
   }
 
-  /* ── Cargar roles al iniciar (para el select de registro) ── */
-  async function preloadRoles() {
-    try {
-      const data = await RolesAPI.getAll();
-      state.data.roles = data;
-      _populateRoleSelect(data);
-    } catch {}
-  }
-
   /* ── Exponer métodos públicos ── */
   return {
-    init,
-    navigate,
-    // Usuarios
-    openNuevoUsuario,
-    editUsuario,
-    saveUsuario,
-    deleteUsuario,
-    // Roles
-    openNuevoRole,
-    editRole,
-    saveRole,
-    deleteRole,
-    // Productos
-    openNuevoProducto,
-    editProducto,
-    saveProducto,
-    deleteProducto,
-    // Otros
-    filterSection,
-    preloadRoles
+    init, navigate,
+    openNuevoUsuario, editUsuario, saveUsuario, deleteUsuario,
+    openNuevoRole,    editRole,    saveRole,    deleteRole,
+    openNuevoProducto, editProducto, saveProducto, deleteProducto,
+    filterSection
   };
 })();
