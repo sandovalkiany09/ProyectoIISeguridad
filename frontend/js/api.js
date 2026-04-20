@@ -1,43 +1,32 @@
 /* ═══════════════════════════════════════════
-   API CLIENT — Comunicación con el backend
-   Base URL: http://localhost:3000
+   API CLIENT
+   RS-04/RS-05: El JWT vive en una cookie HttpOnly.
+   El navegador la envía automáticamente con credentials:'include'.
+   Este archivo NUNCA lee ni escribe localStorage con tokens.
 ═══════════════════════════════════════════ */
 
 const API_BASE  = 'http://localhost:3000/api';
 const AUTH_BASE = 'http://localhost:3000/api/auth';
 
-/* ── Obtener token del localStorage ── */
-function getToken() {
-  return localStorage.getItem('sp_token') || '';
-}
-
-/* ── Headers autenticados ── */
-function authHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + getToken()
-  };
-}
-
-/* ── Cliente HTTP base ── */
+/**
+ * Cliente HTTP base.
+ * credentials: 'include' hace que el navegador adjunte automáticamente
+ * la cookie HttpOnly en cada request — sin que JS toque el token.
+ */
 async function apiRequest(method, url, body = null) {
   const options = {
     method,
-    headers: authHeaders()
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
   };
   if (body) options.body = JSON.stringify(body);
 
   const res = await fetch(url, options);
 
-  // Token expirado o inválido
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     const data = await res.json().catch(() => ({}));
-    // Si dice "expirado" desloguear silenciosamente
-    if (res.status === 401) {
-      Auth.logout();
-      return;
-    }
-    throw new Error(data.message || 'Acceso denegado');
+    Auth.handleSessionExpired(data.reason);
+    throw new Error(data.message || 'Sesión expirada');
   }
 
   const data = await res.json().catch(() => ({}));
@@ -45,15 +34,13 @@ async function apiRequest(method, url, body = null) {
   return data;
 }
 
-/* ══════════════════════════════════════════
-   API DE AUTENTICACIÓN
-══════════════════════════════════════════ */
 const AuthAPI = {
   login(username, password) {
     return fetch(AUTH_BASE + '/login', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
     }).then(async res => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Credenciales inválidas');
@@ -64,50 +51,56 @@ const AuthAPI = {
   register(username, email, password, rol_id) {
     return fetch(AUTH_BASE + '/register', {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, rol_id })
+      body: JSON.stringify({ username, email, password, rol_id }),
     }).then(async res => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al registrar');
       return data;
     });
-  }
+  },
+
+  logout() {
+    return fetch(AUTH_BASE + '/logout', {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {});
+  },
+
+  me() {
+    return fetch(AUTH_BASE + '/me', {
+      method: 'GET',
+      credentials: 'include',
+    }).then(async res => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Sin sesión');
+      return data;
+    });
+  },
 };
 
-/* ══════════════════════════════════════════
-   API DE USUARIOS
-══════════════════════════════════════════ */
 const UsuariosAPI = {
-  getAll()           { return apiRequest('GET',    API_BASE + '/usuarios'); },
-  create(body)       { return apiRequest('POST',   API_BASE + '/usuarios', body); },
-  update(id, body)   { return apiRequest('PATCH',  API_BASE + '/usuarios/' + id, body); },
-  delete(id)         { return apiRequest('DELETE', API_BASE + '/usuarios/' + id); }
+  getAll()         { return apiRequest('GET',    API_BASE + '/usuarios'); },
+  create(body)     { return apiRequest('POST',   API_BASE + '/usuarios', body); },
+  update(id, body) { return apiRequest('PATCH',  API_BASE + '/usuarios/' + id, body); },
+  delete(id)       { return apiRequest('DELETE', API_BASE + '/usuarios/' + id); },
 };
 
-/* ══════════════════════════════════════════
-   API DE ROLES
-══════════════════════════════════════════ */
 const RolesAPI = {
   getAll()           { return apiRequest('GET',    API_BASE + '/roles'); },
   create(nombre)     { return apiRequest('POST',   API_BASE + '/roles', { nombre }); },
   update(id, nombre) { return apiRequest('PATCH',  API_BASE + '/roles/' + id, { nombre }); },
-  delete(id)         { return apiRequest('DELETE', API_BASE + '/roles/' + id); }
+  delete(id)         { return apiRequest('DELETE', API_BASE + '/roles/' + id); },
 };
 
-/* ══════════════════════════════════════════
-   API DE PRODUCTOS
-══════════════════════════════════════════ */
 const ProductosAPI = {
-  getAll()           { return apiRequest('GET',    API_BASE + '/productos'); },
-  create(body)       { return apiRequest('POST',   API_BASE + '/productos', body); },
-  update(id, body)   { return apiRequest('PATCH',  API_BASE + '/productos/' + id, body); },
-  delete(id)         { return apiRequest('DELETE', API_BASE + '/productos/' + id); }
+  getAll()         { return apiRequest('GET',    API_BASE + '/productos'); },
+  create(body)     { return apiRequest('POST',   API_BASE + '/productos', body); },
+  update(id, body) { return apiRequest('PATCH',  API_BASE + '/productos/' + id, body); },
+  delete(id)       { return apiRequest('DELETE', API_BASE + '/productos/' + id); },
 };
 
-/* ══════════════════════════════════════════
-   API DE AUDITORÍA
-══════════════════════════════════════════ */
 const AuditoriaAPI = {
-  getAll() { return apiRequest('GET', API_BASE + '/auditoria'); }
+  getAll() { return apiRequest('GET', API_BASE + '/auditoria'); },
 };
-
