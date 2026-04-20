@@ -1,52 +1,77 @@
-import 'dotenv/config';
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
 import pool from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import systemRoutes from './src/routes/systemRoutes.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+
 const app = express();
 
-//Fix __dirname en ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ════════════════════════════════════════════════════════
+//  MIDDLEWARES
+// ════════════════════════════════════════════════════════
 
-// Middleware
 app.use(express.json());
+app.use(cookieParser());
 
-// Archivos estáticos
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
 
-// Rutas API
-app.use('/api/auth', authRoutes);
-app.use('/api', systemRoutes);
-
-// Ruta principal
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+// Cabeceras de seguridad
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
 });
 
-// Ruta de prueba BD
-app.get('/test-db', async (req, res) => {
+// ════════════════════════════════════════════════════════
+//  FRONTEND ESTÁTICO
+//  Express sirve la carpeta frontend/ en el mismo puerto
+// ════════════════════════════════════════════════════════
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// ════════════════════════════════════════════════════════
+//  RUTAS DE LA API
+// ════════════════════════════════════════════════════════
+app.use('/api/auth', authRoutes);
+app.use('/api',      systemRoutes);
+
+// Verificación de BD
+app.get('/health', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
-    res.json({
-      message: 'Conexión exitosa a la base de datos',
-      fecha: result.rows[0].now
-    });
+    res.json({ status: 'ok', db_time: result.rows[0].now });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Error al conectar con la base de datos'
-    });
+    res.status(500).json({ status: 'error', message: error.message });
   }
 });
 
-// Puerto
-const PORT = 3000;
+// Fallback: Express 5 requiere '/{*path}' en lugar de '*'
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+// ════════════════════════════════════════════════════════
+//  INICIO
+// ════════════════════════════════════════════════════════
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`\nServidor corriendo en http://localhost:${PORT}`);
+  console.log(`  Frontend  ->  http://localhost:${PORT}/`);
+  console.log(`  API       ->  http://localhost:${PORT}/api`);
+  console.log(`  Entorno   ->  ${process.env.NODE_ENV || 'development'}\n`);
 });
+
+export default app;
