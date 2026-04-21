@@ -245,6 +245,8 @@ const App = (() => {
   }
 
   function openNuevoUsuario() {
+    await loadRoles();
+
     document.getElementById('modal-user-title').innerHTML = 'Nuevo <span>usuario</span>';
     document.getElementById('edit-user-id').value = '';
     ['u-nombre', 'u-email', 'u-password'].forEach(id => document.getElementById(id).value = '');
@@ -253,6 +255,8 @@ const App = (() => {
   }
 
   function editUsuario(id) {
+    await loadRoles();
+    
     const u = state.data.usuarios.find(x => x.id === id);
     if (!u) return;
     document.getElementById('modal-user-title').innerHTML = 'Editar <span>usuario</span>';

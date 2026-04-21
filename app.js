@@ -12,32 +12,35 @@ const __dirname  = path.dirname(__filename);
 
 const app = express();
 
+app.disable('x-powered-by');
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
 
 // RS-06: Cabeceras de seguridad HTTP
-app.use((req, res, next) => {
-  // Previene MIME sniffing
+
+ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  // Previene clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
-  // Controla informacion de referrer
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // RS-02: Content Security Policy — restringe origenes de scripts, estilos, iframes
-  res.setHeader('Content-Security-Policy',
-    "default-src 'self'; " +
-    "script-src 'self' https://fonts.googleapis.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "font-src 'self' https://fonts.gstatic.com; " +
-    "img-src 'self' data:; " +
-    "connect-src 'self'; " +
-    "frame-ancestors 'none';"
-  );
-  // HSTS solo en produccion (requiere HTTPS)
+
+  res.setHeader('Content-Security-Policy', `
+    default-src 'self';
+    script-src 'self';
+    style-src 'self' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data:;
+    connect-src 'self';
+    frame-ancestors 'none';
+    form-action 'self';
+    base-uri 'self';
+    object-src 'none';
+  `.replace(/\s+/g, ' ').trim());
+
   if (process.env.NODE_ENV === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
+
   next();
 });
 

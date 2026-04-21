@@ -84,6 +84,21 @@ export const patchUsuario = async (req, res) => {
     const { id } = req.params;
     const { nombre, email, password, rol_id } = req.body;
 
+    // ── 1. Obtener datos actuales del usuario ─────────────────────
+    const currentUser = await pool.query(
+      'SELECT username, email, rol_id FROM usuarios WHERE id = $1',
+      [id]
+    );
+
+    if (currentUser.rows.length === 0) {
+      return res.status(404).json({
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    const oldData = currentUser.rows[0];
+
+    // ── 2. Preparar actualización dinámica ───────────────────────
     const fields = [];
     const values = [];
     let index = 1;
@@ -125,27 +140,38 @@ export const patchUsuario = async (req, res) => {
     `;
 
     const result = await pool.query(query, values);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        message: 'Usuario no encontrado'
-      });
-    }
-
     const actualizado = result.rows[0];
 
-    // LOG (detecta cambio de rol)
-    if (rol_id !== undefined) {
+    // ── 3. Detectar cambios reales ───────────────────────────────
+    let cambios = [];
+
+    if (nombre !== undefined && nombre !== oldData.username) {
+      cambios.push(`username`);
+    }
+
+    if (email !== undefined && email !== oldData.email) {
+      cambios.push(`email`);
+    }
+
+    if (password !== undefined) {
+      cambios.push(`password: [ACTUALIZADA]`);
+    }
+
+    if (rol_id !== undefined && rol_id !== oldData.rol_id) {
+      cambios.push(`rol_id: ${oldData.rol_id} → ${rol_id}`);
+    }
+
+    // ── 4. Registrar auditoría ───────────────────────────────────
+    if (cambios.length > 0) {
       await logAuditoria(
         req.user.id,
-        `CAMBIO ROL usuario ID ${actualizado.id} a rol ${rol_id}`,
+        `UPDATE usuario ID ${actualizado.id} | Cambios: ${cambios.join(', ')}`,
         req.ip
       );
     } else {
-      //LOG
       await logAuditoria(
         req.user.id,
-        `UPDATE usuario ID ${actualizado.id}`,
+        `UPDATE usuario ID ${actualizado.id} | Sin cambios reales`,
         req.ip
       );
     }
@@ -157,7 +183,6 @@ export const patchUsuario = async (req, res) => {
     res.status(500).json({ message: 'Error al actualizar usuario' });
   }
 };
-
 
 /**
  * Eliminar usuario
