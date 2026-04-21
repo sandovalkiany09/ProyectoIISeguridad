@@ -183,15 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ── Toggle contraseña (login) ── */
-  document.getElementById('toggle-login-pass')?.addEventListener('click', () => {
-    const input = document.getElementById('login-password');
-    const btn   = document.getElementById('toggle-login-pass');
-    const show  = input.type === 'password';
-    input.type  = show ? 'text' : 'password';
-    btn.innerHTML = show ? Icons.eyeOff : Icons.eye;
-  });
-
   /* ── Búsquedas en tablas (reemplaza oninput) ── */
   document.getElementById('search-usuarios')
     ?.addEventListener('input', () => App.filterSection('usuarios'));

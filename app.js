@@ -1,71 +1,136 @@
+import 'dotenv/config';
 import express from 'express';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 import pool from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import systemRoutes from './src/routes/systemRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.disable('x-powered-by');
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
+// ════════════════════════════════════════════════════════
+//  1. HELMET — Seguridad HTTP
+// ════════════════════════════════════════════════════════
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'",
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "https://cheek-stretch-scuff.ngrok-free.dev"],
+        frameSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: [],
+      },
+    },
 
-// RS-06: Cabeceras de seguridad HTTP
+    frameguard: { action: 'deny' },
 
- app.use((req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    hsts: process.env.NODE_ENV === 'production'
+      ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+      : false,
 
-  res.setHeader('Content-Security-Policy', `
-    default-src 'self';
-    script-src 'self';
-    style-src 'self' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' data:;
-    connect-src 'self';
-    frame-ancestors 'none';
-    form-action 'self';
-    base-uri 'self';
-    object-src 'none';
-  `.replace(/\s+/g, ' ').trim());
+    noSniff: true,
+    hidePoweredBy: true,
+    dnsPrefetchControl: { allow: false },
+    ieNoOpen: true,
 
-  if (process.env.NODE_ENV === 'production') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
+    permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
+    crossOriginResourcePolicy: { policy: 'same-origin' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
 
+// Permissions-Policy manual
+app.use((req, res, next) => {
+  res.setHeader(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), ' +
+    'accelerometer=(), gyroscope=(), magnetometer=(), interest-cohort=()'
+  );
   next();
 });
 
-// Servir frontend estatico desde la carpeta frontend/
-app.use(express.static(path.join(__dirname, 'frontend')));
+// ════════════════════════════════════════════════════════
+//  2. PARSERS Y CORS
+// ════════════════════════════════════════════════════════
+app.use(express.json());
+app.use(cookieParser());
 
-// Rutas de la API
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+
+// ════════════════════════════════════════════════════════
+//  3. FRONTEND ESTÁTICO
+// ════════════════════════════════════════════════════════
+app.use(express.static(path.join(__dirname, 'frontend'), {
+  lastModified: false,
+  etag: false,
+}));
+
+// ════════════════════════════════════════════════════════
+//  4. RUTAS API
+// ════════════════════════════════════════════════════════
 app.use('/api/auth', authRoutes);
-app.use('/api',      systemRoutes);
+app.use('/api', systemRoutes);
 
-// Verificacion de BD
+// Health check
 app.get('/health', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ status: 'ok', db_time: result.rows[0].now });
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok' });
   } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
+    res.status(500).json({ status: 'error' });
   }
 });
 
+// ════════════════════════════════════════════════════════
+//  5. FALLBACK SPA
+// ════════════════════════════════════════════════════════
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
+// ════════════════════════════════════════════════════════
+//  6. ERROR HANDLER
+// ════════════════════════════════════════════════════════
+app.use((err, req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
+
+  res.status(err.status || 500).json({
+    message: process.env.NODE_ENV === 'production'
+      ? 'Error interno del servidor'
+      : err.message
+  });
+});
+
+// ════════════════════════════════════════════════════════
+//  7. SERVIDOR
+// ════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`\nServidor corriendo en http://localhost:${PORT}`);
   console.log(`  Frontend  ->  http://localhost:${PORT}/`);

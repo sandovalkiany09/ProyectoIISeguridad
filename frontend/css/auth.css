@@ -24,6 +24,10 @@
   overflow: hidden;
 }
 
+.auth-screen--hidden {
+  display: none !important;
+}
+
 
 /* ─────────────────────────────────────────
    2. PANEL IZQUIERDO (visual / decorativo)

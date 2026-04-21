@@ -8,17 +8,13 @@
 
 const Auth = (() => {
 
-  // Estado local de la UI — solo datos públicos, nunca el token
   let _user = null;
 
   function getUser()    { return _user; }
   function isLoggedIn() { return !!_user; }
 
-  /* ── Guardar datos públicos del usuario (no el token) ── */
   function _saveUserState(user) {
     _user = user;
-    // sessionStorage: datos de UI no sensibles, se borra al cerrar pestaña
-    // NO se guarda el token aquí — eso lo maneja el servidor con la cookie
     sessionStorage.setItem('sp_user', JSON.stringify(user));
   }
 
@@ -27,18 +23,26 @@ const Auth = (() => {
     sessionStorage.removeItem('sp_user');
   }
 
-  /* ── Mostrar/ocultar pantallas ── */
+  /* ── Mostrar/ocultar pantallas ──
+     Usa clases CSS en lugar de style="" para cumplir la CSP */
   function showAuthScreen() {
-    document.getElementById('auth-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    switchAuthTab('login');
-  }
+  document.getElementById('auth-screen').classList.remove('auth-screen--hidden');
+  document.getElementById('app').classList.add('app-hidden');
+
+  // Limpiar campos al volver al login
+  const u = document.getElementById('login-username');
+  const p = document.getElementById('login-password');
+  if (u) u.value = '';
+  if (p) p.value = '';
+
+  switchAuthTab('login');
+}
 
   function showApp() {
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    App.init(_user);
-  }
+  document.getElementById('auth-screen').classList.add('auth-screen--hidden');
+  document.getElementById('app').classList.remove('app-hidden');
+  App.init(_user);
+}
 
   /* ── Tabs login/registro ── */
   function switchAuthTab(tab) {
@@ -53,7 +57,8 @@ const Auth = (() => {
 
   function _clearAuthErrors() {
     document.querySelectorAll('.auth-error-box').forEach(el => {
-      el.style.display = 'none'; el.textContent = '';
+      el.classList.add('alert-hidden');
+      el.textContent = '';
     });
   }
 
@@ -61,7 +66,7 @@ const Auth = (() => {
     const el = document.getElementById(elId);
     if (!el) return;
     el.textContent = msg;
-    el.style.display = 'flex';
+    el.classList.remove('alert-hidden');
   }
 
   /* ── LOGIN ── */
@@ -82,9 +87,8 @@ const Auth = (() => {
     btn.innerHTML = `${spinnerHTML()} Ingresando...`;
 
     try {
-      // El servidor setea la cookie HttpOnly — JS solo recibe datos públicos
       const data = await AuthAPI.login(username, password);
-      _saveUserState(data.user); // guarda { id, username, rol_id } — sin token
+      _saveUserState(data.user);
       showApp();
     } catch (err) {
       _showError('login-error', err.message);
@@ -138,7 +142,6 @@ const Auth = (() => {
   /* ── LOGOUT ── */
   async function logout() {
     try {
-      // El servidor limpia la cookie HttpOnly
       await AuthAPI.logout();
     } finally {
       _clearUserState();
@@ -146,18 +149,16 @@ const Auth = (() => {
     }
   }
 
-  /* ── Expiración de sesión (inactividad o token vencido) ── */
+  /* ── Expiración de sesión ── */
   function handleSessionExpired(reason) {
     _clearUserState();
     const msg = reason === 'INACTIVITY_TIMEOUT'
       ? 'Tu sesión expiró por inactividad (5 min). Inicia sesión nuevamente.'
       : 'Tu sesión ha expirado. Inicia sesión nuevamente.';
 
-    // Mostrar pantalla de login con mensaje
     showAuthScreen();
     setTimeout(() => {
-      const el = document.getElementById('login-error');
-      if (el) { el.textContent = msg; el.style.display = 'flex'; }
+      _showError('login-error', msg);
     }, 200);
   }
 
@@ -173,19 +174,16 @@ const Auth = (() => {
 
   /* ── BOOTSTRAP ── */
   async function init() {
-    // Bindings de tabs
     document.querySelectorAll('.auth-tab').forEach(tab => {
       tab.addEventListener('click', () => switchAuthTab(tab.dataset.tab));
     });
 
-    // Enter en login
     ['login-username', 'login-password'].forEach(id => {
       document.getElementById(id)?.addEventListener('keydown', e => {
         if (e.key === 'Enter') doLogin(e);
       });
     });
 
-    // Toggles de contraseña
     document.getElementById('toggle-login-pass')?.addEventListener('click', () =>
       togglePassword('login-password', 'toggle-login-pass'));
     document.getElementById('toggle-reg-pass')?.addEventListener('click', () =>
@@ -193,15 +191,11 @@ const Auth = (() => {
     document.getElementById('toggle-reg-confirm')?.addEventListener('click', () =>
       togglePassword('reg-confirm', 'toggle-reg-confirm'));
 
-    // RS-04: Verificar sesión activa consultando al servidor.
-    // Si la cookie HttpOnly existe y es válida → continuar sesión.
-    // Si expiró (por tiempo o inactividad) → el servidor responde 401 → login.
     try {
       const data = await AuthAPI.me();
       _saveUserState(data.user);
       showApp();
     } catch {
-      // No hay sesión activa o expiró — mostrar login
       showAuthScreen();
     }
   }

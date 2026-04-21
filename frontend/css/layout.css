@@ -244,7 +244,6 @@
   overflow: hidden;
 }
 
-/* Imagen de fondo — lado derecho, semitransparente */
 #section-bg {
   position: fixed;
   top: 0;
@@ -258,8 +257,6 @@
   background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.7s var(--ease-out);
-
-  /* Desvanece hacia la izquierda */
   mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -278,7 +275,6 @@
 
 #section-bg.visible { opacity: 1; }
 
-/* Tinte de paleta sobre la imagen */
 #section-bg-tint {
   position: fixed;
   top: 0;
@@ -311,7 +307,6 @@
 
 #section-bg-tint.visible { opacity: 1; }
 
-/* El contenido queda encima */
 .page-content {
   position: relative;
   z-index: 1;
@@ -337,6 +332,47 @@
   display: block;
   animation: fade-up 0.35s var(--ease-out) both;
 }
+
+/* ══════════════════════════════════════════
+   CLASES UTILITARIAS DE TABLA
+   Reemplazan todos los style="" inline que
+   había en el HTML y en el JS dinámico.
+══════════════════════════════════════════ */
+
+/* Reemplaza style="color:var(--text-400)" en celdas de índice y fecha */
+.td-date {
+  font-size: 0.8rem;
+}
+
+/* Reemplaza style="font-weight:500" y style="font-weight:600" en nombres */
+.td-bold { font-weight: 500; }
+
+/* Reemplaza style="text-align:right" en celdas numéricas */
+.td-right { text-align: right; }
+
+/* Reemplaza style="color:var(--success);font-weight:600" en precio */
+.td-price {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Reemplaza style="...max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" */
+.td-desc {
+  font-size: 0.82rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Celda con avatar + nombre de usuario */
+.td-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.td-username { font-weight: 500; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {

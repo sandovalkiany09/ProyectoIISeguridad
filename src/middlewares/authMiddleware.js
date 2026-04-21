@@ -87,8 +87,8 @@ export const verifyToken = (req, res, next) => {
 
     res.cookie('sp_token', refreshed, {
       httpOnly: true,
-      secure:   process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      secure:   true,
+      sameSite: 'none',
       maxAge:   60 * 60 * 1000, // 1 hora
       path:     '/',
     });
@@ -129,8 +129,8 @@ export const authorizeRoles = (...rolesPermitidos) => {
 function _clearSession(res) {
   res.clearCookie('sp_token', {
     httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
+    secure:   true,
+    sameSite: 'none',
     path:     '/',
   });
 }

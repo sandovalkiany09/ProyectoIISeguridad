@@ -1,7 +1,6 @@
 /* ═══════════════════════════════════════════
    APP — Lógica principal de la aplicación
-   Sin onclick inline — usa delegación de eventos
-   para los botones generados dinámicamente.
+   Sin style="" inline — todo por clases CSS.
 ═══════════════════════════════════════════ */
 
 const App = (() => {
@@ -20,19 +19,14 @@ const App = (() => {
     _bindNav();
     _setUserBadge();
     _applyButtonPermissions();
-    _bindDelegatedEvents();   // ← reemplaza todos los onclick dinámicos
+    _bindDelegatedEvents();
     navigate('dashboard');
   }
 
   /* ════════════════════════════════════════
-     DELEGACIÓN DE EVENTOS
-     Los botones de editar/eliminar se generan
-     dinámicamente en el HTML de las tablas.
-     En lugar de onclick inline, usamos un solo
-     listener en el tbody de cada tabla.
+     DELEGACIÓN DE EVENTOS (tablas dinámicas)
   ════════════════════════════════════════ */
   function _bindDelegatedEvents() {
-    // Tabla de usuarios
     document.getElementById('usuarios-body')
       ?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action]');
@@ -42,7 +36,6 @@ const App = (() => {
         if (action === 'delete-user') App.deleteUsuario(parseInt(id), name);
       });
 
-    // Tabla de roles
     document.getElementById('roles-body')
       ?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action]');
@@ -52,7 +45,6 @@ const App = (() => {
         if (action === 'delete-role') App.deleteRole(parseInt(id), name);
       });
 
-    // Tabla de productos
     document.getElementById('productos-body')
       ?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action]');
@@ -64,45 +56,45 @@ const App = (() => {
   }
 
   /* ════════════════════════════════════════
-     SIDEBAR
+     SIDEBAR — visibilidad por rol
+     Usa classList en lugar de style.display
   ════════════════════════════════════════ */
   function _buildSidebar() {
     const rolId = state.user.rol_id;
     document.querySelectorAll('.nav-item[data-roles]').forEach(el => {
       const allowed = el.dataset.roles.split(',').map(Number);
-      el.style.display = allowed.includes(rolId) ? '' : 'none';
+      el.classList.toggle('hidden-by-role', !allowed.includes(rolId));
     });
   }
 
   function _applyButtonPermissions() {
     const rolId = state.user.rol_id;
 
-    // Solo superadmin (1) puede crear usuarios
     const btnNewUser = document.getElementById('btn-new-user');
-    if (btnNewUser) btnNewUser.style.display = rolId === 1 ? '' : 'none';
+    if (btnNewUser) btnNewUser.classList.toggle('hidden-by-role', rolId !== 1);
 
-    // Superadmin (1) y registrador (3) pueden crear productos
     const btnNewProd = document.getElementById('btn-new-prod');
-    if (btnNewProd) btnNewProd.style.display = [1, 3].includes(rolId) ? '' : 'none';
+    if (btnNewProd) btnNewProd.classList.toggle('hidden-by-role', ![1, 3].includes(rolId));
   }
 
   function _setUserBadge() {
-    const u = state.user;
+    const u       = state.user;
     const name    = u.username || '—';
     const rolData = ROLE_MAP[u.rol_id] || { name: 'Rol ' + u.rol_id, class: 'badge-neutral' };
     document.getElementById('sb-avatar-letter').textContent = name[0].toUpperCase();
     document.getElementById('sb-name').textContent  = name;
     document.getElementById('sb-role').textContent  = rolData.name;
-    document.getElementById('topbar-role').innerHTML = `<span class="badge ${rolData.class}">${rolData.name}</span>`;
+    document.getElementById('topbar-role').innerHTML =
+      `<span class="badge ${rolData.class}">${rolData.name}</span>`;
   }
 
   /* ════════════════════════════════════════
      NAVEGACIÓN
   ════════════════════════════════════════ */
   const PAGE_META = {
-    dashboard: { title: 'Panel de <span>control</span>',     sub: 'Resumen general del sistema' },
-    usuarios:  { title: 'Gestión de <span>usuarios</span>',  sub: 'Administración de cuentas' },
-    roles:     { title: 'Gestión de <span>roles</span>',     sub: 'Control de acceso basado en roles' },
+    dashboard: { title: 'Panel de <span>control</span>',      sub: 'Resumen general del sistema' },
+    usuarios:  { title: 'Gestión de <span>usuarios</span>',   sub: 'Administración de cuentas' },
+    roles:     { title: 'Gestión de <span>roles</span>',      sub: 'Control de acceso basado en roles' },
     productos: { title: 'Catálogo de <span>productos</span>', sub: 'Inventario y gestión de productos' },
     auditoria: { title: 'Registro de <span>auditoría</span>', sub: 'Historial de eventos del sistema' }
   };
@@ -134,19 +126,22 @@ const App = (() => {
 
     // Topbar
     const meta = PAGE_META[page] || { title: page, sub: '' };
-    document.getElementById('topbar-title').innerHTML  = meta.title;
-    document.getElementById('topbar-sub').textContent  = meta.sub;
+    document.getElementById('topbar-title').innerHTML = meta.title;
+    document.getElementById('topbar-sub').textContent = meta.sub;
 
-    // Fondo dinámico
+    // Fondo dinámico — usa classList en lugar de style.opacity / style.backgroundImage
     const bg   = document.getElementById('section-bg');
     const tint = document.getElementById('section-bg-tint');
     if (bg) {
-      bg.style.opacity   = 0;
-      if (tint) tint.style.opacity = 0;
+      bg.classList.remove('bg-visible');
+      if (tint) tint.classList.remove('bg-visible');
+
       setTimeout(() => {
+        // backgroundImage no es un estilo "inline" bloqueado por CSP de style-src
+        // porque se aplica vía JS a la propiedad, no como atributo HTML style=""
         bg.style.backgroundImage = `url('${SECTION_BG[page] || SECTION_BG.dashboard}')`;
-        bg.style.opacity   = 1;
-        if (tint) tint.style.opacity = 1;
+        bg.classList.add('bg-visible');
+        if (tint) tint.classList.add('bg-visible');
       }, 200);
     }
 
@@ -171,9 +166,7 @@ const App = (() => {
         RolesAPI.getAll().catch(() => []),
         ProductosAPI.getAll().catch(() => [])
       ];
-      if (state.user.rol_id === 1) {
-        promises.push(AuditoriaAPI.getAll().catch(() => []));
-      }
+      if (state.user.rol_id === 1) promises.push(AuditoriaAPI.getAll().catch(() => []));
       const [usuarios, roles, productos, logs] = await Promise.all(promises);
 
       document.getElementById('stat-usuarios').textContent  = usuarios.length;
@@ -185,10 +178,10 @@ const App = (() => {
       if (logs && logs.length) {
         tbody.innerHTML = logs.slice(0, 10).map(l => `
           <tr>
-            <td><span class="td-mono">${l.usuario || '<span class="text-muted">sistema</span>'}</span></td>
+            <td class="td-mono">${l.usuario || '<span class="text-muted">sistema</span>'}</td>
             <td class="td-mono">${l.accion}</td>
             <td class="td-mono">${l.ip || '—'}</td>
-            <td style="color:var(--text-400);font-size:0.8rem">${fmtDate(l.fecha)}</td>
+            <td class="text-muted td-date">${fmtDate(l.fecha)}</td>
           </tr>`).join('');
       } else {
         tbody.innerHTML = emptyRow(4, 'Sin actividad reciente o sin permisos de auditoría');
@@ -215,18 +208,16 @@ const App = (() => {
     document.getElementById('usuarios-body').innerHTML = rows.length
       ? rows.map((u, i) => `
         <tr>
-          <td style="color:var(--text-400)">${i + 1}</td>
+          <td class="td-num">${i + 1}</td>
           <td>
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--c-royal),var(--c-sky));display:grid;place-items:center;font-size:0.75rem;font-weight:700;flex-shrink:0">
-                ${u.nombre[0].toUpperCase()}
-              </div>
-              <span style="font-weight:500">${u.nombre}</span>
+            <div class="td-user-cell">
+              <div class="avatar-mini">${u.nombre[0].toUpperCase()}</div>
+              <span class="td-username">${u.nombre}</span>
             </div>
           </td>
-          <td style="color:var(--text-300)">${u.email}</td>
+          <td class="text-soft">${u.email}</td>
           <td>${roleBadge(u.rol_id, u.rol)}</td>
-          <td style="color:var(--text-400);font-size:0.8rem">${fmtDate(u.last_login)}</td>
+          <td class="text-muted td-date">${fmtDate(u.last_login)}</td>
           <td>
             <div class="td-actions">
               ${isAdmin ? `
@@ -237,16 +228,16 @@ const App = (() => {
                 <button class="btn btn-danger btn-xs"
                   data-action="delete-user" data-id="${u.id}" data-name="${u.nombre}" title="Eliminar">
                   ${Icons.trash}
-                </button>` : '<span style="color:var(--text-400)">—</span>'}
+                </button>
+              ` : '<span class="text-muted">—</span>'}
             </div>
           </td>
         </tr>`).join('')
       : emptyRow(6, 'No hay usuarios registrados');
   }
 
-  function openNuevoUsuario() {
-    await loadRoles();
-
+  async function openNuevoUsuario() {
+    await _ensureRoles();
     document.getElementById('modal-user-title').innerHTML = 'Nuevo <span>usuario</span>';
     document.getElementById('edit-user-id').value = '';
     ['u-nombre', 'u-email', 'u-password'].forEach(id => document.getElementById(id).value = '');
@@ -254,17 +245,16 @@ const App = (() => {
     Modal.open('modal-user');
   }
 
-  function editUsuario(id) {
-    await loadRoles();
-    
+  async function editUsuario(id) {
+    await _ensureRoles();
     const u = state.data.usuarios.find(x => x.id === id);
     if (!u) return;
     document.getElementById('modal-user-title').innerHTML = 'Editar <span>usuario</span>';
     document.getElementById('edit-user-id').value = id;
-    document.getElementById('u-nombre').value  = u.nombre;
-    document.getElementById('u-email').value   = u.email;
+    document.getElementById('u-nombre').value   = u.nombre;
+    document.getElementById('u-email').value    = u.email;
     document.getElementById('u-password').value = '';
-    document.getElementById('u-rol').value     = u.rol_id;
+    document.getElementById('u-rol').value      = u.rol_id;
     Modal.open('modal-user');
   }
 
@@ -283,13 +273,8 @@ const App = (() => {
     }
     if (id && !body.password) delete body.password;
     try {
-      if (id) {
-        await UsuariosAPI.update(id, body);
-        Toast.success('Usuario actualizado correctamente.');
-      } else {
-        await UsuariosAPI.create(body);
-        Toast.success('Usuario creado correctamente.');
-      }
+      if (id) { await UsuariosAPI.update(id, body); Toast.success('Usuario actualizado.'); }
+      else     { await UsuariosAPI.create(body);     Toast.success('Usuario creado.'); }
       Modal.close('modal-user');
       loadUsuarios();
     } catch (err) { Toast.error(err.message); }
@@ -307,6 +292,14 @@ const App = (() => {
   /* ════════════════════════════════════════
      ROLES
   ════════════════════════════════════════ */
+  async function _ensureRoles() {
+    if (!state.data.roles.length) {
+      const data = await RolesAPI.getAll().catch(() => []);
+      state.data.roles = data;
+      _populateRoleSelect(data);
+    }
+  }
+
   async function loadRoles() {
     document.getElementById('roles-body').innerHTML = loadingRow(4);
     try {
@@ -321,9 +314,9 @@ const App = (() => {
     document.getElementById('roles-body').innerHTML = rows.length
       ? rows.map((r, i) => `
         <tr>
-          <td style="color:var(--text-400)">${i + 1}</td>
+          <td class="td-num">${i + 1}</td>
           <td><span class="badge badge-neutral td-mono">#${r.id}</span></td>
-          <td style="font-weight:500">${r.nombre}</td>
+          <td class="td-bold">${r.nombre}</td>
           <td>
             <div class="td-actions">
               <button class="btn btn-ghost btn-xs"
@@ -341,12 +334,10 @@ const App = (() => {
   }
 
   function _populateRoleSelect(roles) {
-    ['u-rol'].forEach(selId => {
-      const sel = document.getElementById(selId);
-      if (!sel) return;
-      sel.innerHTML = '<option value="">Seleccionar rol...</option>' +
-        roles.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
-    });
+    const sel = document.getElementById('u-rol');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Seleccionar rol...</option>' +
+      roles.map(r => `<option value="${r.id}">${r.nombre}</option>`).join('');
   }
 
   function openNuevoRole() {
@@ -370,13 +361,8 @@ const App = (() => {
     const nombre = document.getElementById('r-nombre').value.trim();
     if (!nombre) { Toast.warning('El nombre del rol es obligatorio.'); return; }
     try {
-      if (id) {
-        await RolesAPI.update(id, nombre);
-        Toast.success('Rol actualizado.');
-      } else {
-        await RolesAPI.create(nombre);
-        Toast.success('Rol creado.');
-      }
+      if (id) { await RolesAPI.update(id, nombre); Toast.success('Rol actualizado.'); }
+      else     { await RolesAPI.create(nombre);     Toast.success('Rol creado.'); }
       Modal.close('modal-role');
       loadRoles();
     } catch (err) { Toast.error(err.message); }
@@ -411,23 +397,26 @@ const App = (() => {
     document.getElementById('productos-body').innerHTML = rows.length
       ? rows.map((p, i) => `
         <tr>
-          <td style="color:var(--text-400)">${i + 1}</td>
+          <td class="td-num">${i + 1}</td>
           <td><span class="badge badge-success td-mono">${p.codigo}</span></td>
-          <td style="font-weight:500">${p.nombre}</td>
-          <td style="color:var(--text-400);font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-            ${p.descripcion || '—'}
-          </td>
-          <td style="font-weight:600;text-align:right">${p.cantidad}</td>
-          <td style="color:var(--success);font-weight:600;text-align:right">${fmtMoney(p.precio)}</td>
+          <td class="td-bold">${p.nombre}</td>
+          <td class="text-muted td-desc">${p.descripcion || '—'}</td>
+          <td class="td-right td-bold">${p.cantidad}</td>
+          <td class="td-right td-price">${fmtMoney(p.precio)}</td>
           <td>
             <div class="td-actions">
-              ${canEdit ? `<button class="btn btn-ghost btn-xs"
-                data-action="edit-product" data-id="${p.id}" title="Editar">
-                ${Icons.edit}</button>` : ''}
-              ${canDel ? `<button class="btn btn-danger btn-xs"
-                data-action="delete-product" data-id="${p.id}" data-name="${p.nombre.replace(/'/g, '&#39;')}" title="Eliminar">
-                ${Icons.trash}</button>` : ''}
-              ${!canEdit && !canDel ? '<span style="color:var(--text-400)">—</span>' : ''}
+              ${canEdit ? `
+                <button class="btn btn-ghost btn-xs"
+                  data-action="edit-product" data-id="${p.id}" title="Editar">
+                  ${Icons.edit}
+                </button>` : ''}
+              ${canDel ? `
+                <button class="btn btn-danger btn-xs"
+                  data-action="delete-product" data-id="${p.id}"
+                  data-name="${p.nombre.replace(/'/g, '&#39;')}" title="Eliminar">
+                  ${Icons.trash}
+                </button>` : ''}
+              ${!canEdit && !canDel ? '<span class="text-muted">—</span>' : ''}
             </div>
           </td>
         </tr>`).join('')
@@ -469,13 +458,8 @@ const App = (() => {
       return;
     }
     try {
-      if (id) {
-        await ProductosAPI.update(id, body);
-        Toast.success('Producto actualizado.');
-      } else {
-        await ProductosAPI.create(body);
-        Toast.success('Producto creado.');
-      }
+      if (id) { await ProductosAPI.update(id, body); Toast.success('Producto actualizado.'); }
+      else     { await ProductosAPI.create(body);     Toast.success('Producto creado.'); }
       Modal.close('modal-product');
       loadProductos();
     } catch (err) { Toast.error(err.message); }
@@ -500,7 +484,8 @@ const App = (() => {
       state.data.auditoria = data;
       renderAuditoria(data);
     } catch {
-      document.getElementById('auditoria-body').innerHTML = emptyRow(5, 'Sin permisos para ver auditoría');
+      document.getElementById('auditoria-body').innerHTML =
+        emptyRow(5, 'Sin permisos para ver auditoría');
     }
   }
 
@@ -508,11 +493,11 @@ const App = (() => {
     document.getElementById('auditoria-body').innerHTML = rows.length
       ? rows.map((l, i) => `
         <tr>
-          <td style="color:var(--text-400)">${i + 1}</td>
-          <td style="font-weight:500">${l.usuario || '<span class="text-muted">sistema</span>'}</td>
+          <td class="td-num">${i + 1}</td>
+          <td class="td-bold">${l.usuario || '<span class="text-muted">sistema</span>'}</td>
           <td class="td-mono">${l.accion}</td>
           <td class="td-mono">${l.ip || '—'}</td>
-          <td style="color:var(--text-400);font-size:0.8rem">${fmtDate(l.fecha)}</td>
+          <td class="text-muted td-date">${fmtDate(l.fecha)}</td>
         </tr>`).join('')
       : emptyRow(5, 'No hay registros de auditoría');
   }

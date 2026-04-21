@@ -5,8 +5,8 @@
    Este archivo NUNCA lee ni escribe localStorage con tokens.
 ═══════════════════════════════════════════ */
 
-const API_BASE  = 'http://localhost:3000/api';
-const AUTH_BASE = 'http://localhost:3000/api/auth';
+const API_BASE  = '/api';
+const AUTH_BASE = '/api/auth';
 
 /**
  * Cliente HTTP base.
